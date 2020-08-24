@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Service>
+    <Service_Header>
+        <service_id>00880000420102</service_id>
+        <requester_id>0087</requester_id>
+        <channel_id>22</channel_id>
+        <service_time>2019-11-11 11:11:11.111</service_time>
+        <version_id>01</version_id>
+        <route_flag>99</route_flag>
+        <common></common>
+    </Service_Header>
+    <Service_Body>
+        <ext_attributes>
+            <req_serv_id>420102</req_serv_id>
+            <iterate_no></iterate_no>
+            <requester_id></requester_id>
+            <channel_id></channel_id>
+            <ori_req_id></ori_req_id>
+            <ori_cha_id></ori_cha_id>
+            <req_servcode></req_servcode>
+            <channel_servcode></channel_servcode>
+            <ori_req_servcode></ori_req_servcode>
+            <ori_cha_servcode></ori_cha_servcode>
+            <terminal_id></terminal_id>
+            <branch_id></branch_id>
+            <operator_id></operator_id>
+            <sub_auth_teller></sub_auth_teller>
+            <auth_psw01></auth_psw01>
+            <bran_auth_teller></bran_auth_teller>
+            <auth_psw02></auth_psw02>
+            <cen_auth_teller01></cen_auth_teller01>
+            <auth_psw03></auth_psw03>
+            <cen_auth_teller02></cen_auth_teller02>
+            <ori_req_date></ori_req_date>
+            <ori_req_sn></ori_req_sn>
+            <ori_req_timestamp></ori_req_timestamp>
+            <requester_date></requester_date>
+            <requester_sn></requester_sn>
+            <mac_value></mac_value>
+        </ext_attributes>
+        <request>
+            <resolve_type>01</resolve_type>
+            <cust_no>9527</cust_no>
+            <cert_type></cert_type>
+            <cert_num></cert_num>
+            <cust_name>周周周</cust_name>
+        </request>
+    </Service_Body>
+</Service>

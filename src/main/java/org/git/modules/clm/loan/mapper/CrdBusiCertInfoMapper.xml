@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.loan.mapper.CrdBusiCertInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="crdBusiCertInfoResultMap" type="org.git.modules.clm.loan.entity.CrdBusiCertInfo">
+        <id column="CRET_INFO_ID" property="cretInfoId"/>
+        <result column="CRD_DETAIL_NUM" property="crdDetailNum"/>
+        <result column="BUSI_DEAL_NUM" property="busiDealNum"/>
+        <result column="BUSI_PRD_NUM" property="busiPrdNum"/>
+        <result column="BUSI_DEAL_DESC" property="busiDealDesc"/>
+        <result column="BUSI_DEAL_ORG_NUM" property="busiDealOrgNum"/>
+        <result column="BUSI_DEAL_ORG_NAME" property="busiDealOrgName"/>
+        <result column="BUSI_OPPT_ORG_NUM" property="busiOpptOrgNum"/>
+        <result column="BUSI_OPPT_ORG_NAME" property="busiOpptOrgName"/>
+        <result column="BUSI_SUM_AMT" property="busiSumAmt"/>
+        <result column="BUSI_CERT_CNT" property="busiCertCnt"/>
+        <result column="CERT_NUM" property="certNum"/>
+        <result column="CERT_TYPE_CD" property="certTypeCd"/>
+        <result column="CERT_PPT_CD" property="certPptCd"/>
+        <result column="CERT_INTEREST_PERI_TYPE" property="certInterestPeriType"/>
+        <result column="CERT_INTEREST_PERIOD" property="certInterestPeriod"/>
+        <result column="CERT_INTEREST_RATE_TYPE" property="certInterestRateType"/>
+        <result column="CERT_INTEREST_RATE" property="certInterestRate"/>
+        <result column="CERT_CURRENCY_CD" property="certCurrencyCd"/>
+        <result column="CERT_SEQ_AMT" property="certSeqAmt"/>
+        <result column="CERT_APPLY_AMT" property="certApplyAmt"/>
+        <result column="CERT_APPLY_BALANCE" property="certApplyBalance"/>
+        <result column="CERT_STATUS" property="certStatus"/>
+        <result column="CERT_BEGIN_DATE" property="certBeginDate"/>
+        <result column="CERT_END_DATE" property="certEndDate"/>
+        <result column="CERT_FINISH_DATE" property="certFinishDate"/>
+        <result column="CERT_DRAWER_CUST_NUM" property="certDrawerCustNum"/>
+        <result column="CERT_DRAWER_NAME" property="certDrawerName"/>
+        <result column="CERT_DRAWER_BANK_NUM" property="certDrawerBankNum"/>
+        <result column="CERT_DRAWER_BANK_NAME" property="certDrawerBankName"/>
+        <result column="CERT_GUARANTY_TYPE" property="certGuarantyType"/>
+        <result column="CERT_GUARANTY_PERSON" property="certGuarantyPerson"/>
+        <result column="LAST_SUMMARY_BAL" property="lastSummaryBal"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="CERT_BUSI_REMARK" property="certBusiRemark"/>
+    </resultMap>
+
+
+    <select id="selectCrdBusiCertInfoPage" resultMap="crdBusiCertInfoResultMap">
+        select * from TB_CRD_BUSI_CERT_INFO
+    </select>
+
+    <select id="countDateValid" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+            tb_crd_busi_cert_info i
+        INNER JOIN
+            tb_crd_detail d
+        ON
+            i.crd_detail_num=d.crd_detail_num
+        INNER JOIN
+            tb_crd_main m
+        ON
+            d.crd_main_num=m.crd_main_num
+        WHERE i.busi_deal_num IN
+            <foreach collection="certInfoIds" item="certInfoId" open="(" separator="," close=")">
+                #{certInfoId}
+            </foreach>
+            AND (i.cert_begin_date <![CDATA[>]]> m.begin_date OR i.cert_end_date <![CDATA[<]]> m.end_date);
+     </select>
+
+    <select id="collectDate" resultMap="crdBusiCertInfoResultMap">
+        select
+            min(cert_begin_date) as cert_begin_date,
+            max(cert_end_date) as cert_end_date,
+            max(cert_status) as  cert_status
+        from tb_crd_busi_cert_info
+        where busi_deal_num = #{busiDealNum}
+            and crd_detail_num = #{crdDetailNum}
+    </select>
+
+    <select id="selectForUpdate" resultMap="crdBusiCertInfoResultMap">
+        SELECT
+            c.cret_info_id          AS cret_info_id ,
+            b.crd_detail_num        AS crd_detail_num ,
+            a.busi_deal_num         AS busi_deal_num ,
+            a.busi_prd_num          AS busi_prd_num ,
+            a.busi_deal_desc        AS busi_deal_desc ,
+            a.busi_deal_org_num     AS busi_deal_org_num ,
+            a.busi_deal_org_name    AS busi_deal_org_name ,
+            a.busi_oppt_org_num     AS busi_oppt_org_num ,
+            a.busi_oppt_org_name    AS busi_oppt_org_name ,
+            a.busi_sum_amt          AS busi_sum_amt ,
+            a.busi_cert_cnt         AS busi_cert_cnt ,
+            a.cert_num              AS cert_num ,
+            a.cert_type_cd          AS cert_type_cd ,
+            a.cert_ppt_cd           AS cert_ppt_cd ,
+            a.cert_interest_period  AS cert_interest_period ,
+            a.cert_interest_rate    AS cert_interest_rate ,
+            a.cert_currency_cd      AS cert_currency_cd ,
+            a.cert_seq_amt          AS cert_seq_amt ,
+            a.cert_apply_amt        AS cert_apply_amt ,
+            a.cert_apply_balance    AS cert_apply_balance ,
+            c.cert_status           AS cert_status ,
+            a.cert_begin_date       AS cert_begin_date ,
+            a.cert_end_date         AS cert_end_date ,
+            a.cert_finish_date      AS cert_finish_date ,
+            a.cert_drawer_cust_num  AS cert_drawer_cust_num ,
+            a.cert_drawer_name      AS cert_drawer_name ,
+            a.cert_drawer_bank_num  AS cert_drawer_bank_num ,
+            a.cert_drawer_bank_name AS cert_drawer_bank_name ,
+            a.cert_guaranty_type    AS cert_guaranty_type ,
+            a.cert_guaranty_person  AS cert_guaranty_person ,
+            a.cert_busi_remark      AS cert_busi_remark
+        FROM
+            tb_fund_event_detail a
+        INNER JOIN
+            tb_crd_detail b
+        ON
+            a.crd_detail_prd=b.crd_detail_prd
+        AND a.crd_grant_org_num=b.crd_grant_org_num
+        AND a.customer_num=b.customer_num
+        LEFT JOIN
+            tb_crd_busi_cert_info c
+        ON
+            a.busi_deal_num=c.busi_deal_num
+        AND b.crd_detail_num=c.crd_detail_num
+        AND c.cert_num=a.cert_num
+        WHERE
+            a.event_main_id=#{eventMainId}
+        AND a.crd_grant_org_num=#{crdGrantOrgNum}
+        AND a.customer_num=#{customerNum}
+        AND a.crd_detail_prd=#{crdDetailPrd}
+    </select>
+    <!---->
+    <sql id="">
+
+    </sql>
+
+    <!--查询同业额度台账占用恢复信息-->
+    <select id="findLedgerCrdBusiCertInfoPage" resultType="org.git.modules.clm.loan.vo.CrdBusiCertInfoVO">
+          select
+            t1.cret_info_id,
+            t1.busi_deal_num,
+            t1.busi_prd_num,
+            t1.cert_num,
+            t1.cert_interest_period,
+            t1.cert_interest_rate,
+            t1.cert_currency_cd,
+            t1.cert_seq_amt,
+            t1.cert_apply_amt,
+            t1.cert_status,
+            t1.cert_begin_date,
+            t1.cert_end_date,
+            t1.cert_busi_remark,
+            t1.user_num,
+            t2.org_num,                     -- 经办机构
+            t2.crd_detail_num,              -- 三级额度编号
+            t2.crd_detail_prd,
+            t3.crd_product_name,
+            p.product_name
+        from
+            tb_crd_busi_cert_info t1,
+            tb_crd_detail t2,
+            tb_par_crd t3,
+            TB_PAR_PRODUCT p ,
+            CHAIN_DEPT t4
+        where t1.crd_detail_num=t2.crd_detail_num
+        and  t2.crd_detail_prd= t3.crd_product_num
+        and  t1.busi_prd_num =p.PRODUCT_Num
+        and  t2.org_num=t4.id
+        and t1.customer_num=#{customerNum}
+        and t4.ANCESTORS like  CONCAT(CONCAT('%',#{orgNum}),'%')
+    </select>
+
+    <!--通过业务品种查询同业产品详情-->
+    <select id="findLedgerByCrdPrd" resultType="org.git.modules.clm.loan.vo.CrdBusiCertInfoVO">
+            select
+                a.*,
+                b.crd_product_name            -- 额度产品名称
+
+            from
+                    tb_crd_busi_cert_info a,           -- 业务产品凭证信息表
+                    tb_par_crd b                   -- 额度品种配置
+            where a.crd_detail_prd= b.crd_product_num
+            and  a.crd_detail_prd=#{crdDetailPrd}
+            and  a.cert_num= #{certNum}
+            and  a.custmoer_num =#{customerNum}
+            and  a.crd_grant_org_num=#{crdGrantOrgNum}
+    </select>
+
+    <!--查询同业额度台账详情-->
+    <select id="findCrdBusiCertInfoDetailByCusNum" resultType="org.git.modules.clm.loan.vo.CrdBusiCertInfoVO">
+          select
+               a.*,
+               cd.org_num,
+               pc.crd_product_name,
+               cp.customer_name,
+               p.PRODUCT_NAME
+          from      tb_crd_busi_cert_info a
+          inner join tb_crd_detail cd     on a.crd_detail_num=cd.crd_detail_num
+          inner join tb_csm_party cp      on cd.customer_num= cp.customer_num
+          inner join  tb_par_crd pc       on cd.crd_detail_prd= pc.crd_product_num
+          left join TB_PAR_PRODUCT p      on a.busi_prd_num= p.product_num
+          where a.cret_info_id=#{cretInfoId}
+    </select>
+</mapper>

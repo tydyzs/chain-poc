@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.FundAssignedInMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="fundAssignedInResultMap" type="org.git.modules.clm.credit.entity.FundAssignedIn">
+        <result column="TRANSFER_IN_ID" property="transferInId"/>
+        <result column="EVENT_MAIN_ID" property="eventMainId"/>
+        <result column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="TRAN_DATE" property="tranDate"/>
+        <result column="CRD_IN_ORG_NUM" property="crdInOrgNum"/>
+        <result column="BUSI_NEWL_REQ_NUM" property="busiNewlReqNum"/>
+    </resultMap>
+
+
+    <select id="selectFundAssignedInPage" resultMap="fundAssignedInResultMap">
+        select * from TB_FUND_ASSIGNED_IN where is_deleted = 0
+    </select>
+
+</mapper>

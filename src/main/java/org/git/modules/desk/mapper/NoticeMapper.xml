@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.desk.mapper.NoticeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="noticeResultMap" type="org.git.modules.desk.entity.Notice">
+        <result column="id" property="id"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="status" property="status"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="release_time" property="releaseTime"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+    </resultMap>
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="noticeVOResultMap" type="org.git.modules.desk.vo.NoticeVO">
+        <result column="id" property="id"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="status" property="status"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="release_time" property="releaseTime"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+    </resultMap>
+
+    <select id="topList" resultMap="noticeResultMap">
+        select * from chain_notice limit #{number}
+    </select>
+
+    <!--查本级及上级机构发布的通知公告信息-->
+    <select id="selectNoticePage" parameterType="org.git.modules.desk.vo.NoticeVO"
+            resultType="org.git.modules.desk.vo.NoticeVO">
+        with temptab(id,parent_id,dept_level,is_deleted) as
+        (
+        select id,parent_id,dept_level,is_deleted
+        from chain_dept where id = #{noticeVO.createDept}
+        union all
+        select sub.id,sub.parent_id,sub.dept_level,sub.is_deleted
+        from temptab ,chain_dept sub where temptab.parent_id = sub.id
+        )
+        SELECT n.*,
+        d.dict_value AS category_name,
+        u.NAME as create_user_name,
+        cd.DEPT_NAME as create_dept_name
+        FROM temptab tp,chain_notice n
+        LEFT JOIN chain_dict d on d.CODE = 'notice' and n.category = d.dict_key
+        left join chain_user u on u.id = n.CREATE_USER
+        left join CHAIN_DEPT cd on cd.ID = n.CREATE_DEPT
+        WHERE n.is_deleted = 0
+        and tp.id=n.CREATE_DEPT
+        <if test="noticeVO.title!=null and noticeVO.title!=''">
+            and n.title like CONCAT(CONCAT('%',#{noticeVO.title}),'%')
+        </if>
+        <if test="noticeVO.category!=null and noticeVO.category!=''">
+            and n.category = #{noticeVO.category}
+        </if>
+        <if test="noticeVO.releaseTime!=null and noticeVO.releaseTime!=''">
+            and n.release_time = #{noticeVO.releaseTime}
+        </if>
+    </select>
+</mapper>

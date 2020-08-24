@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.ParCrdRuleCtrlMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="parCrdRuleCtrlResultMap" type="org.git.modules.clm.credit.entity.ParCrdRuleCtrl">
+        <id column="SERIAL_ID" property="serialId"/>
+        <result column="SERIAL_ID" property="serialId"/>
+        <result column="EVENT_TYPE_CD" property="eventTypeCd"/>
+        <result column="TRAN_TYPE_CD" property="tranTypeCd"/>
+        <result column="CHECK_ITEM" property="checkItem"/>
+        <result column="CHECK_FLAG" property="checkFlag"/>
+        <result column="CHECK_METHOD" property="checkMethod"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectParCrdRuleCtrlPage" resultMap="parCrdRuleCtrlResultMap">
+        select * from TB_PAR_CRD_RULE_CTRL where is_deleted = 0
+    </select>
+
+</mapper>

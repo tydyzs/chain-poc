@@ -1,0 +1,133 @@
+drop table tb_crd_granting_serial;
+
+
+create table tb_crd_granting_serial (
+   granting_serial_id VARCHAR(32)            not null,
+   tran_seq_sn        VARCHAR(32)            not null,
+   tran_type          VARCHAR(2),
+   biz_num            VARCHAR(12),
+   tran_system        VARCHAR(12),
+   org_num            VARCHAR(12),
+   user_num           VARCHAR(12),
+   tran_date          DATE,
+   busi_org_num       VARCHAR(12),
+   party_id           VARCHAR(32),
+   ecif_cust_num      VARCHAR(40),
+   credit_num         VARCHAR(40)            not null,
+   crd_product_num    VARCHAR(10),
+   currency_cd        VARCHAR(10),
+   limit_credit_sum   DECIMAL(18,2),
+   begin_date         VARCHAR(32),
+   end_date           VARCHAR(10),
+   credit_state       VARCHAR(10),
+   frozen_date        VARCHAR(10),
+   over_date          VARCHAR(10),
+   credit_detail_num  VARCHAR(40)            not null,
+   crd_product_num2   VARCHAR(10),
+   limit_credit       DECIMAL(18,2),
+   deal_state         VARCHAR(2),
+   create_time        TIMESTAMP,
+   update_time        TIMESTAMP,
+   remark1            VARCHAR(50),
+   remark2            VARCHAR(50),
+   remark3            VARCHAR(50),
+   remark4            VARCHAR(50),
+   remark5            VARCHAR(50),
+   constraint P_Key_1 primary key (granting_serial_id)
+);
+
+comment on table tb_crd_granting_serial is
+'额度授信流水';
+
+comment on column tb_crd_granting_serial.granting_serial_id is
+'授信流水id';
+
+comment on column tb_crd_granting_serial.tran_seq_sn is
+'交易流水号';
+
+comment on column tb_crd_granting_serial.tran_type is
+'交易类型';
+
+comment on column tb_crd_granting_serial.biz_num is
+'业务编号';
+
+comment on column tb_crd_granting_serial.tran_system is
+'经办系统';
+
+comment on column tb_crd_granting_serial.org_num is
+'经办机构';
+
+comment on column tb_crd_granting_serial.user_num is
+'经办人';
+
+comment on column tb_crd_granting_serial.tran_date is
+'交易日期';
+
+comment on column tb_crd_granting_serial.busi_org_num is
+'业务交易机构';
+
+comment on column tb_crd_granting_serial.party_id is
+'客户ID';
+
+comment on column tb_crd_granting_serial.ecif_cust_num is
+'ecif客户编号';
+
+comment on column tb_crd_granting_serial.credit_num is
+'额度编号';
+
+comment on column tb_crd_granting_serial.crd_product_num is
+'额度产品编号';
+
+comment on column tb_crd_granting_serial.currency_cd is
+'币种';
+
+comment on column tb_crd_granting_serial.limit_credit_sum is
+'授信额度';
+
+comment on column tb_crd_granting_serial.begin_date is
+'额度起期';
+
+comment on column tb_crd_granting_serial.end_date is
+'额度止期';
+
+comment on column tb_crd_granting_serial.credit_state is
+'额度状态';
+
+comment on column tb_crd_granting_serial.frozen_date is
+'冻结起期';
+
+comment on column tb_crd_granting_serial.over_date is
+'冻结止期';
+
+comment on column tb_crd_granting_serial.credit_detail_num is
+'额度编号';
+
+comment on column tb_crd_granting_serial.crd_product_num2 is
+'明细额度产品编号';
+
+comment on column tb_crd_granting_serial.limit_credit is
+'授信额度';
+
+comment on column tb_crd_granting_serial.deal_state is
+'交易状态';
+
+comment on column tb_crd_granting_serial.create_time is
+'创建时间';
+
+comment on column tb_crd_granting_serial.update_time is
+'修改时间';
+
+comment on column tb_crd_granting_serial.remark1 is
+'备用2';
+
+comment on column tb_crd_granting_serial.remark2 is
+'备用2';
+
+comment on column tb_crd_granting_serial.remark3 is
+'备用3';
+
+comment on column tb_crd_granting_serial.remark4 is
+'备用4';
+
+comment on column tb_crd_granting_serial.remark5 is
+'备用5';

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmIndexCreditMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="rcmConfigurationCreditResultMap" type="org.git.modules.clm.rcm.entity.RcmIndexCredit">
+        <id column="QUOTA_INDEX_NUM" property="quotaIndexNum"/>
+        <result column="QUOTA_INDEX_CALIBER" property="quotaIndexCaliber"/>
+        <result column="QUOTA_INDEX_RANGE" property="quotaIndexRange"/>
+        <result column="RANGE_REGION" property="rangeRegion"/>
+        <result column="RANGE_CUSTOMER" property="rangeCustomer"/>
+        <result column="CURRENCY" property="currency"/>
+        <result column="RANGE_COUNTRY" property="rangeCountry"/>
+        <result column="RANGE_INDUSTRY" property="rangeIndustry"/>
+        <result column="RANGE_PRODUCT" property="rangeProduct"/>
+        <result column="RANGE_TERM" property="rangeTerm"/>
+        <result column="RANGER_RISK_MITIGATION" property="rangerRiskMitigation"/>
+        <result column="COMPUTING_METHOD" property="computingMethod"/>
+        <result column="COMPUTING_TARGET" property="computingTarget"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectRcmConfigurationCreditPage" resultMap="rcmConfigurationCreditResultMap">
+        select * from tb_rcm_index_credit
+    </select>
+
+</mapper>

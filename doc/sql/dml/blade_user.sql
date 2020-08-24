@@ -1,0 +1,5 @@
+#创建基本用户
+delete from chain_user;
+INSERT INTO `chain_user`(`id`, `tenant_id`, `account`, `password`, `name`, `real_name`, `avatar`, `email`, `phone`, `birthday`, `sex`, `role_id`, `dept_id`, `create_user`, `create_dept`, `create_time`, `update_user`, `update_time`, `status`, `is_deleted`) VALUES (1123598821738675201, '000000', 'admin', '90b9aa7e25f80cf4f64e990b78a9fc5ebd6cecad', '管理员', '管理员', '', 'admin@chain.vip', '123333333333', '2018-08-08 00:00:00', 1, '1183657990503268353', '1000', 1123598821738675201, 1123598813738675201, '2018-08-08 00:00:00', 1123598821738675201, '2019-10-14 16:50:56', 1, 0);
+INSERT INTO `chain_user`(`id`, `tenant_id`, `account`, `password`, `name`, `real_name`, `avatar`, `email`, `phone`, `birthday`, `sex`, `role_id`, `dept_id`, `create_user`, `create_dept`, `create_time`, `update_user`, `update_time`, `status`, `is_deleted`) VALUES (1183660675864461314, '', 'user', '60bddb16409a2baf76936619afecf778dabe68de', 'user', 'user', NULL, '', '', NULL, NULL, '1183658219222859778', '1132', 1123598821738675201, 1100, '2019-10-14 16:27:51', 1123598821738675201, '2019-10-14 16:27:51', 1, 0);
+commit;

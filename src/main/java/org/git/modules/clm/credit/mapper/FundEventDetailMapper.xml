@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.FundEventDetailMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="fundEventDetailResultMap" type="org.git.modules.clm.credit.entity.FundEventDetail">
+        <id column="EVENT_DETAILED_ID" property="eventDetailedId"/>
+        <result column="EVENT_MAIN_ID" property="eventMainId"/>
+        <result column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="TRAN_DATE" property="tranDate"/>
+        <result column="CRD_GRANT_ORG_NUM" property="crdGrantOrgNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CRD_DETAIL_PRD" property="crdDetailPrd"/>
+        <result column="BUSI_DEAL_NUM" property="busiDealNum"/>
+        <result column="BUSI_PRD_NUM" property="busiPrdNum"/>
+        <result column="BUSI_DEAL_DESC" property="busiDealDesc"/>
+        <result column="BUSI_DEAL_ORG_NUM" property="busiDealOrgNum"/>
+        <result column="BUSI_DEAL_ORG_NAME" property="busiDealOrgName"/>
+        <result column="BUSI_OPPT_ORG_NUM" property="busiOpptOrgNum"/>
+        <result column="BUSI_OPPT_ORG_NAME" property="busiOpptOrgName"/>
+        <result column="BUSI_SUM_AMT" property="busiSumAmt"/>
+        <result column="BUSI_CERT_CNT" property="busiCertCnt"/>
+        <result column="CERT_NUM" property="certNum"/>
+        <result column="CERT_TYPE_CD" property="certTypeCd"/>
+        <result column="CERT_PPT_CD" property="certPptCd"/>
+        <result column="CERT_INTEREST_PERIOD" property="certInterestPeriod"/>
+        <result column="CERT_INTEREST_RATE" property="certInterestRate"/>
+        <result column="CERT_CURRENCY_CD" property="certCurrencyCd"/>
+        <result column="CERT_SEQ_AMT" property="certSeqAmt"/>
+        <result column="CERT_APPLY_AMT" property="certApplyAmt"/>
+        <result column="CERT_APPLY_BALANCE" property="certApplyBalance"/>
+        <result column="CERT_STATUS" property="certStatus"/>
+        <result column="CERT_BEGIN_DATE" property="certBeginDate"/>
+        <result column="CERT_END_DATE" property="certEndDate"/>
+        <result column="CERT_FINISH_DATE" property="certFinishDate"/>
+        <result column="CERT_DRAWER_CUST_NUM" property="certDrawerCustNum"/>
+        <result column="CERT_DRAWER_NAME" property="certDrawerName"/>
+        <result column="CERT_DRAWER_BANK_NUM" property="certDrawerBankNum"/>
+        <result column="CERT_DRAWER_BANK_NAME" property="certDrawerBankName"/>
+        <result column="CERT_GUARANTY_TYPE" property="certGuarantyType"/>
+        <result column="CERT_GUARANTY_PERSON" property="certGuarantyPerson"/>
+        <result column="CERT_BUSI_REMARK" property="certBusiRemark"/>
+    </resultMap>
+
+
+    <select id="selectFundEventDetailPage" resultMap="fundEventDetailResultMap">
+        select * from TB_FUND_EVENT_DETAIL
+    </select>
+
+    <select id="selectToSerial" resultMap="fundEventDetailResultMap">
+        select distinct
+            event_main_id,
+            tran_seq_sn,
+            tran_date,
+            crd_grant_org_num,
+            customer_num,
+            crd_detail_prd,
+            busi_deal_num,
+            busi_prd_num,
+            busi_deal_desc,
+            busi_deal_org_num,
+            busi_deal_org_name,
+            busi_oppt_org_num,
+            busi_oppt_org_name,
+            busi_sum_amt
+        FROM TB_FUND_EVENT_DETAIL  WHERE EVENT_MAIN_ID = #{eventMainId}
+    </select>
+</mapper>

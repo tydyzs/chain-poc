@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.customer.mapper.CsmCorporationMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="csmCorporationResultMap" type="org.git.modules.clm.customer.entity.CsmCorporation">
+        <id column="customer_num" property="customerNum"/>
+        <result column="customer_num" property="customerNum"/>
+        <result column="customer_type" property="customerType"/>
+        <result column="cust_status" property="custStatus"/>
+        <result column="bank_cust_flag" property="bankCustFlag"/>
+        <result column="cust_manager_no" property="custManagerNo"/>
+        <result column="cust_name" property="custName"/>
+        <result column="org_short_name" property="orgShortName"/>
+        <result column="cust_eng_name" property="custEngName"/>
+        <result column="org_rng_short_name" property="orgRngShortName"/>
+        <result column="national_economy_type" property="nationalEconomyType"/>
+        <result column="national_economy_depart1" property="nationalEconomyDepart1"/>
+        <result column="national_economy_depart2" property="nationalEconomyDepart2"/>
+        <result column="national_economy_depart3" property="nationalEconomyDepart3"/>
+        <result column="national_economy_depart4" property="nationalEconomyDepart4"/>
+        <result column="found_date" property="foundDate"/>
+        <result column="reg_capital" property="regCapital"/>
+        <result column="reg_cptl_curr" property="regCptlCurr"/>
+        <result column="unit_scale" property="unitScale"/>
+        <result column="emp_number" property="empNumber"/>
+        <result column="pay_credit_flag" property="payCreditFlag"/>
+        <result column="country_code" property="countryCode"/>
+        <result column="credit_organ_code" property="creditOrganCode"/>
+        <result column="busin_scope" property="businScope"/>
+        <result column="bank_cust_type1" property="bankCustType1"/>
+        <result column="bank_cust_type2" property="bankCustType2"/>
+        <result column="bank_pay_sys_num" property="bankPaySysNum"/>
+        <result column="group_credit_indicator" property="groupCreditIndicator"/>
+        <result column="bank_indicator" property="bankIndicator"/>
+        <result column="rel_party_ind" property="relPartyInd"/>
+        <result column="swift_code" property="swiftCode"/>
+        <result column="bene_cust_type" property="beneCustType"/>
+        <result column="remarks" property="remarks"/>
+        <result column="created_ts" property="createdTs"/>
+        <result column="last_updated_org" property="lastUpdatedOrg"/>
+        <result column="last_updated_te" property="lastUpdatedTe"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectCsmCorporationPage" resultMap="csmCorporationResultMap">
+        select * from TB_CSM_CORPORATION where is_deleted = 0
+    </select>
+
+    <select id="selectCsmCorporationPageByCusNum" resultType="org.git.modules.clm.customer.vo.CsmCorporationVO">
+        select
+            t1.customer_type, --客户类型
+            t1.BENE_CUST_TYPE, --对公客户类型
+            t1.customer_num, --客户编号
+            t1.cust_name, --客户名称
+            t1.emp_number, --企业员工人数
+            t1.reg_capital, --注册资本
+            t1.reg_cptl_curr, --注册资本币种
+            t1.unit_scale, --企业规模
+            t1.national_economy_depart4, --国民经济行业4
+            t1.country_code, --国家
+            t1.credit_organ_code --机构信用代码
+        from
+            TB_CSM_CORPORATION t1
+        where
+            t1.CUSTOMER_NUM = #{customerNum}
+    </select>
+
+</mapper>

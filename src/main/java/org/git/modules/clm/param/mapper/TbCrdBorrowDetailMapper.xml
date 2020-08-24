@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.param.mapper.TbCrdBorrowDetailMapper">
+
+
+    <select id="selectTbCrdBorrowDetailPage" resultType="org.git.modules.clm.param.vo.TbCrdBorrowDetailVO">
+        select t.*, a.customer_name,a.CUSTOMER_TYPE
+        from TB_CRD_BORROW_DETAIL t
+        left join tb_csm_party a on a.customer_num = t.customer_num
+        where 1 = 1
+        <if test="tbCrdBorrowDetail.lstgId!=null">
+           and t.LSTG_ID=#{tbCrdBorrowDetail.lstgId}
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmLedgerMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="rcmLoanTenCusRptResultMap" type="org.git.modules.clm.rcm.entity.RcmLoanTenCusRpt">
+        <id column="INFO_NUM" property="infoNum"/>
+        <result column="CUSTOMER_NAME" property="customerName"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="LOAN_BALANCE" property="loanBalance"/>
+        <result column="LOAN_BALANCE_LAST_MONTH" property="loanBalanceLastMonth"/>
+        <result column="TOTAL_MONTH" property="totalMonth"/>
+        <result column="TOTAL_YEAR" property="totalYear"/>
+        <result column="USE_ORG_NUM" property="useOrgNum"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="REMARK" property="remark"/>
+    </resultMap>
+
+
+    <!--限额台账-查询限额基本数据-->
+    <select id="queryQuotaDetail" resultType="org.git.modules.clm.rcm.vo.RcmQuotaManagerVO">
+        select a.QUOTA_NUM,--集中度限额编号
+               a.QUOTA_NAME,--限额名称
+               a.QUOTA_INDEX_NUM,--限额指标类型
+               a.USE_ORG_NUM,--生效机构
+               a.QUOTA_USED_AMT,--限额已用金额
+               a.QUOTA_FREE_AMT,--限额可用金额
+               a.QUOTA_USED_RATIO,--限额已用比率
+               a.QUOTA_FREE_RATIO,--限额可用比率
+               a.START_DATE,--限额生效日期
+               a.INVALID_DATE,--限额失效日期
+               a.HIS_FREQUENCY,--历史触发次数
+               a.QUOTA_STATE,--限额状态
+               COALESCE(b.QUOTA_CONTROL_AMT1, b.QUOTA_CONTROL_RATIO1) AS quotaObserve,--观察
+               b.CONTROL_NODE1                                        AS observeNode,
+               b.NODE_MEASURE1                                        AS observeMeasure,
+               COALESCE(b.QUOTA_CONTROL_AMT2, b.QUOTA_CONTROL_RATIO2) AS quotaWarning,--预警
+               b.CONTROL_NODE2                                        AS warningNode,
+               b.NODE_MEASURE2                                        AS warningMeasure,
+               COALESCE(b.QUOTA_CONTROL_RATIO3, b.QUOTA_CONTROL_AMT3) AS quotaController,--控制
+               b.CONTROL_NODE3                                        AS controllerNode,
+               b.NODE_MEASURE3                                        AS controllerMeasure,
+               c.QUOTA_INDEX_NUM, --限额指标编号
+               c.QUOTA_INDEX_NAME,--限额指标名称
+               c.QUOTA_INDEX_TYPE,--限额指标类型
+               c.QUOTA_TYPE,--限额类型
+               c.COMPUTING_METHOD,--限额计算方式
+               c.QUOTA_INDEX_CALIBER,--统计口径
+               c.COMPUTING_TARGET,--限额计算对象
+               c.QUOTA_INDEX_STATE,--指标状态
+               'TODO'                                                    QUOTA_INDEX_ELEMENTS,--限额指标要素
+               c.EXPLAIN_INFO,--补充说明
+               c.USER_NUM,--维护人
+               c.ORG_NUM,--维护机构
+               c.CREATE_TIME,--创建时间
+               c.UPDATE_TIME--维护时间
+        from TB_RCM_CONFIG a
+                 left join (select b.QUOTA_NUM,
+                                   max(case when b.QUOTA_LEVEL = '1' then b.QUOTA_CONTROL_RATIO end) QUOTA_CONTROL_RATIO1,
+                                   max(case when b.QUOTA_LEVEL = '2' then b.QUOTA_CONTROL_RATIO end) QUOTA_CONTROL_RATIO2,
+                                   max(case when b.QUOTA_LEVEL = '3' then b.QUOTA_CONTROL_RATIO end) QUOTA_CONTROL_RATIO3,
+                                   max(case when b.QUOTA_LEVEL = '1' then b.QUOTA_CONTROL_AMT end)   QUOTA_CONTROL_AMT1,
+                                   max(case when b.QUOTA_LEVEL = '2' then b.QUOTA_CONTROL_AMT end)   QUOTA_CONTROL_AMT2,
+                                   max(case when b.QUOTA_LEVEL = '3' then b.QUOTA_CONTROL_AMT end)   QUOTA_CONTROL_AMT3,
+                                   max(case when b.QUOTA_LEVEL = '1' then b.CONTROL_NODE end)        CONTROL_NODE1,
+                                   max(case when b.QUOTA_LEVEL = '2' then b.CONTROL_NODE end)        CONTROL_NODE2,
+                                   max(case when b.QUOTA_LEVEL = '3' then b.CONTROL_NODE end)        CONTROL_NODE3,
+                                   max(case when b.QUOTA_LEVEL = '1' then b.NODE_MEASURE end)        NODE_MEASURE1,
+                                   max(case when b.QUOTA_LEVEL = '2' then b.NODE_MEASURE end)        NODE_MEASURE2,
+                                   max(case when b.QUOTA_LEVEL = '3' then b.NODE_MEASURE end)        NODE_MEASURE3
+                            from TB_RCM_CONFIG_PARA b
+                            group by b.QUOTA_NUM) b
+                           on a.QUOTA_NUM = b.QUOTA_NUM
+                 left join TB_RCM_INDEX c on c.QUOTA_INDEX_NUM = a.QUOTA_INDEX_NUM
+        where a.QUOTA_NUM = #{quotaNum}
+    </select>
+
+    <!--限额台账-查询历史限额和预警趋势数据-->
+    <select id="queryHistoryTotal" resultType="org.git.modules.clm.rcm.vo.RcmLedgerQuotaVO">
+        select a.TOTAL_YEAR,
+               a.TOTAL_MONTH,
+               a.QUOTA_NUM,
+               a.QUOTA_USED_AMT,
+               a.MONTH_TO_MONTH_AMT,
+               a.MONTH_TO_MONTH_RATIO,
+               a.HIS_FREQUENCY_A3,
+               a.HIS_FREQUENCY_B3,
+               a.HIS_FREQUENCY_C3,
+               a.HIS_FREQUENCY_MONTH
+        from TB_RCM_CONFIG_TOTAL a,
+             TB_RCM_CONFIG b
+        where a.QUOTA_NUM = b.QUOTA_NUM
+          and to_date(a.TOTAL_YEAR || a.TOTAL_MONTH, 'yyyyMM') > to_date(FNC_GET_HS_DATE('1', 'yyyyMMdd'), 'yyyyMMdd')
+          and b.QUOTA_NUM = #{quotaNum}
+    </select>
+
+    <!--限额台账-查询限额历史预警-->
+    <select id="queryHistoryWarn" resultType="org.git.modules.clm.rcm.vo.RcmLedgerWarnVO">
+        select RECO_YEAR,
+               RECO_MONTH,
+               QUOTA_NUM,
+               max(case when TRIGGER_LEVEL = '1' then times end) his_frequency_a,
+               max(case when TRIGGER_LEVEL = '2' then times end) his_frequency_b,
+               max(case when TRIGGER_LEVEL = '3' then times end) his_frequency_c
+        from (select RECO_YEAR, RECO_MONTH, QUOTA_NUM, TRIGGER_LEVEL, count(1) times
+              from TB_RCM_WARN_INFO
+              where to_date(RECO_YEAR || RECO_MONTH, 'yyyyMM') > to_date(FNC_GET_HS_DATE('1', 'yyyyMMdd'), 'yyyyMMdd')
+              group by RECO_YEAR, RECO_MONTH, QUOTA_NUM, TRIGGER_LEVEL)
+        group by RECO_YEAR, RECO_MONTH, QUOTA_NUM
+        having QUOTA_NUM = #{quotaNum}
+
+    </select>
+
+    <!--生成当月限额数据-->
+    <select id="queryCurrentTotal" parameterType="java.util.Map" resultType="org.git.modules.clm.rcm.vo.RcmConfigTotalVO">
+        select A.QUOTA_NUM AS QUOTA_NUM,--限额编号
+            A.QUOTA_NAME,--限额名称
+            A.QUOTA_INDEX_NUM, --限额指标编号
+            I.QUOTA_INDEX_NAME, --限额指标名称
+            A.QUOTA_USED_AMT AS QUOTA_USED_AMT,--限额已用金额
+            A.QUOTA_FREE_AMT AS QUOTA_FREE_AMT,--限额可用金额
+            A.QUOTA_USED_RATIO AS QUOTA_USED_RATIO,--限额已用比率
+            A.QUOTA_FREE_RATIO AS QUOTA_FREE_RATIO,--限额可用比率
+            A.QUOTA_TOTAL_SUM AS QUOTA_TOTAL_SUM,--限额总额
+            A.QUOTA_TOTAL_TYPE AS QUOTA_TOTAL_TYPE,--限额总额类型
+            a.QUOTA_USED_AMT - e.QUOTA_USED_AMT as YEAR_TO_YEAR_AMT,--比同期增长量（同比）
+            (a.QUOTA_USED_AMT - e.QUOTA_USED_AMT) / a.QUOTA_USED_AMT * 100 as YEAR_TO_YEAR_RATIO,--比同期增长率（同比）
+            a.QUOTA_USED_AMT - f.QUOTA_USED_AMT as last_year_amt,--比年初增长量
+            (a.QUOTA_USED_AMT - f.QUOTA_USED_AMT) / a.QUOTA_USED_AMT * 100 as LAST_YEAR_RATIO,--比年初增长率
+            a.QUOTA_USED_AMT - g.QUOTA_USED_AMT as month_to_month_amt,--比上期增长量（环比）
+            (a.QUOTA_USED_AMT - g.QUOTA_USED_AMT) / a.QUOTA_USED_AMT * 100 as MONTH_TO_MONTH_RATIO,--比上期增长率（环比）
+            g.QUOTA_USED_AMT as LAST_QUOTA_USED_AMT,--上月值
+            nvl(a.his_frequency_a, 0) AS HIS_FREQUENCY_A,--观察值历史触发次数
+            nvl(a.his_frequency_b, 0) AS HIS_FREQUENCY_B,--预警值历史触发次数
+            nvl(a.his_frequency_c, 0) AS HIS_FREQUENCY_C,--控制值历史触发次数
+            nvl(a.his_frequency, 0) as HIS_FREQUENCY,--历史累计触发次数
+            nvl(c.his_frequency_a2, 0) AS HIS_FREQUENCY_A2,--观察值本年触发次数
+            nvl(c.his_frequency_b2, 0) AS HIS_FREQUENCY_B2,--预警值本年触发次数
+            nvl(c.his_frequency_c2, 0) AS HIS_FREQUENCY_C2,--控制值本年触发次数
+            nvl(c.his_frequency_a2, 0) + nvl(c.his_frequency_b2, 0) + nvl(c.his_frequency_c2, 0) as
+            HIS_FREQUENCY_YEAR,--本年累计触发次数
+            nvl(d.his_frequency_a3, 0) as HIS_FREQUENCY_A3,--观察值本月触发次数
+            nvl(d.his_frequency_b3, 0) as HIS_FREQUENCY_B3,--预警值本月触发次数
+            nvl(d.his_frequency_c3, 0) as HIS_FREQUENCY_C3,--控制值本月触发次数
+            nvl(d.his_frequency_a3, 0) + nvl(d.his_frequency_b3, 0) + nvl(d.his_frequency_c3, 0) as
+            HIS_FREQUENCY_MONTH,--当月累计触发次数
+            b.net_capital as NET_CAPITAL,--当月资本净额
+            b.net_primary_capital as NET_PRIMARY_CAPITAL,--当月一级资本净额
+            b.net_assets as NET_ASSETS,--当月净资产
+            FNC_GET_HS_DATE(0, 'y') as TOTAL_YEAR,--年份
+            FNC_GET_HS_DATE(0, 'm') as TOTAL_MONTH,--月份
+            a.use_org_num as useOrgNum,--生效机构
+            'batch' as USER_NUM,--经办人
+            'batch' as ORG_NUM,--经办机构
+            FNC_GET_BUSI_TIME() as CREATE_TIME,--创建时间
+            FNC_GET_BUSI_TIME() as UPDATE_TIME,--更新时间
+            '' as REMARK,
+            h.OBSERVE_VALUE,--观察
+            h.OBSERVE_VALUE_TYPE,--阈值类型 1.金额 2.百分比
+            h.OBSERVE_NODE,--最大节点
+            h.OBSERVE_NODE_MEASURE,--应对措施
+            h.WARN_VALUE,--预警
+            h.WARN_VALUE_TYPE,--阈值类型 1.金额 2.百分比
+            h.WARN_NODE,--最大节点
+            h.WARN_NODE_MEASURE,--应对措施
+            h.CONTROL_VALUE,--控制
+            h.CONTROL_VALUE_TYPE,--阈值类型 1.金额 2.百分比
+            h.CONTROL_NODE,--最大节点
+            h.CONTROL_NODE_MEASURE--应对措施
+        from TB_RCM_CONFIG a
+            left join TB_RCM_NET_CAPITAL b
+                on b.USE_ORG_NUM = a.USE_ORG_NUM and b.NET_STATE = '1'
+            inner join TB_RCM_INDEX i
+                on i.QUOTA_INDEX_NUM = a.QUOTA_INDEX_NUM
+            left join (select QUOTA_NUM,
+                            max(case when TRIGGER_LEVEL = '1' then times end) his_frequency_a2,
+                            max(case when TRIGGER_LEVEL = '2' then times end) his_frequency_b2,
+                            max(case when TRIGGER_LEVEL = '3' then times end) his_frequency_c2
+                            from (select QUOTA_NUM, TRIGGER_LEVEL, count(1) times
+                                    from TB_RCM_WARN_INFO
+                                    where RECO_YEAR = FNC_GET_HS_DATE(0, 'y')
+                                    group by QUOTA_NUM, TRIGGER_LEVEL)
+                            group by QUOTA_NUM) c on c.QUOTA_NUM = a.QUOTA_NUM
+            left join (select QUOTA_NUM,
+                            max(case when TRIGGER_LEVEL = '1' then times end) his_frequency_a3,
+                            max(case when TRIGGER_LEVEL = '2' then times end) his_frequency_b3,
+                            max(case when TRIGGER_LEVEL = '3' then times end) his_frequency_c3
+                            from (select QUOTA_NUM, TRIGGER_LEVEL, count(1) times
+                                    from TB_RCM_WARN_INFO
+                                    where RECO_YEAR = FNC_GET_HS_DATE(0, 'y')
+                                    and RECO_MONTH = FNC_GET_HS_DATE(0, 'm')
+                                    group by QUOTA_NUM, TRIGGER_LEVEL)
+                            group by QUOTA_NUM) d on d.QUOTA_NUM = a.QUOTA_NUM
+            left join TB_RCM_CONFIG_TOTAL e
+                on e.TOTAL_YEAR = FNC_GET_HS_DATE(1, 'y')
+                and e.TOTAL_MONTH = FNC_GET_HS_DATE(1, 'm')
+                and e.QUOTA_NUM = a.QUOTA_NUM
+            left join TB_RCM_CONFIG_TOTAL f
+                on f.TOTAL_YEAR = FNC_GET_HS_DATE(2, 'y')
+                and f.TOTAL_MONTH = FNC_GET_HS_DATE(2, 'm')
+                and f.QUOTA_NUM = a.QUOTA_NUM
+            left join TB_RCM_CONFIG_TOTAL g
+                on g.TOTAL_YEAR = FNC_GET_HS_DATE(3, 'y')
+                and g.TOTAL_MONTH = FNC_GET_HS_DATE(3, 'm')
+                and g.QUOTA_NUM = a.QUOTA_NUM
+            left join (select b.QUOTA_NUM,--集中度限额编号
+                                COALESCE(b.QUOTA_CONTROL_AMT1, b.QUOTA_CONTROL_RATIO1) AS OBSERVE_VALUE,--观察
+                                decode(QUOTA_CONTROL_AMT1, null, '2', '1')             AS OBSERVE_VALUE_TYPE,--阈值类型 1.金额 2.百分比
+                                b.CONTROL_NODE1                                        AS OBSERVE_NODE,
+                                b.NODE_MEASURE1                                        AS OBSERVE_NODE_MEASURE,
+                                COALESCE(b.QUOTA_CONTROL_AMT2, b.QUOTA_CONTROL_RATIO2) AS WARN_VALUE,--预警
+                                decode(QUOTA_CONTROL_AMT2, null, '2', '1')             AS WARN_VALUE_TYPE,--阈值类型 1.金额 2.百分比
+                                b.CONTROL_NODE2                                        AS WARN_NODE,
+                                b.NODE_MEASURE2                                        AS WARN_NODE_MEASURE,
+                                COALESCE(b.QUOTA_CONTROL_AMT3, b.QUOTA_CONTROL_RATIO3) AS CONTROL_VALUE,--控制
+                                decode(QUOTA_CONTROL_AMT3, null, '2', '1')             AS CONTROL_VALUE_TYPE,--阈值类型 1.金额 2.百分比
+                                b.CONTROL_NODE3                                        AS CONTROL_NODE,
+                                b.NODE_MEASURE3                                        AS CONTROL_NODE_MEASURE
+                            from (select b.QUOTA_NUM,
+                                    max(case when b.QUOTA_LEVEL = '1' then b.QUOTA_CONTROL_RATIO end) QUOTA_CONTROL_RATIO1,
+                                    max(case when b.QUOTA_LEVEL = '2' then b.QUOTA_CONTROL_RATIO end) QUOTA_CONTROL_RATIO2,
+                                    max(case when b.QUOTA_LEVEL = '3' then b.QUOTA_CONTROL_RATIO end) QUOTA_CONTROL_RATIO3,
+                                    max(case when b.QUOTA_LEVEL = '1' then b.QUOTA_CONTROL_AMT end)   QUOTA_CONTROL_AMT1,
+                                    max(case when b.QUOTA_LEVEL = '2' then b.QUOTA_CONTROL_AMT end)   QUOTA_CONTROL_AMT2,
+                                    max(case when b.QUOTA_LEVEL = '3' then b.QUOTA_CONTROL_AMT end)   QUOTA_CONTROL_AMT3,
+                                    max(case when b.QUOTA_LEVEL = '1' then b.CONTROL_NODE end)        CONTROL_NODE1,
+                                    max(case when b.QUOTA_LEVEL = '2' then b.CONTROL_NODE end)        CONTROL_NODE2,
+                                    max(case when b.QUOTA_LEVEL = '3' then b.CONTROL_NODE end)        CONTROL_NODE3,
+                                    max(case when b.QUOTA_LEVEL = '1' then b.NODE_MEASURE end)        NODE_MEASURE1,
+                                    max(case when b.QUOTA_LEVEL = '2' then b.NODE_MEASURE end)        NODE_MEASURE2,
+                                    max(case when b.QUOTA_LEVEL = '3' then b.NODE_MEASURE end)        NODE_MEASURE3
+                                    from TB_RCM_CONFIG_PARA b
+                            group by b.QUOTA_NUM) b) h
+                on h.QUOTA_NUM =  a.QUOTA_NUM
+        <where>
+            <if test="quotaNum!=null and quotaNum!=''">
+                a.QUOTA_NUM = #{quotaNum, jdbcType=VARCHAR}
+            </if>
+            <if test="quotaIndexNum!=null and quotaIndexNum!=''">
+                a.QUOTA_INDEX_NUM = #{quotaIndexNum, jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+
+</mapper>

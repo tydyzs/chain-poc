@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmQuotaCheckMapper">
+
+
+
+    <select id="checkQuotaIndex" resultType="java.lang.Boolean">
+
+
+    </select>
+
+    <select id="listTopTenCustomer" parameterType="string" resultType="org.git.modules.clm.credit.entity.TbCrdStatisCsm">
+        select *
+        from (select ROW_NUMBER() OVER (PARTITION BY ORG_NUM ORDER BY LOAN_EXP_BALANCE desc) ROW_NUM, a.*
+        from tb_crd_statis_csm a
+        where a.ORG_NUM = #{orgNum}) t
+        where t.ROW_NUM &lt;= 10
+
+    </select>
+
+    <select id="listQuotaIndex" resultType="org.git.modules.clm.rcm.vo.RcmConfigVO">
+          select b.QUOTA_INDEX_NUM,
+                 b.QUOTA_INDEX_TYPE,
+                 b.QUOTA_INDEX_RANGE,
+                 b.QUOTA_INDEX_NAME,
+                 b.COMPUTING_METHOD,
+                 b.COMPUTING_TARGET,
+                 b.QUOTA_INDEX_CALIBER,
+                 a.*
+        from CLM.TB_RCM_CONFIG a,
+             CLM.tb_rcm_index b
+        where a.QUOTA_INDEX_NUM = b.QUOTA_INDEX_NUM
+          and a.QUOTA_STATE = '1'
+          and b.QUOTA_INDEX_STATE = '1'
+          and a.USE_ORG_NUM = #{orgNum}
+
+    </select>
+</mapper>

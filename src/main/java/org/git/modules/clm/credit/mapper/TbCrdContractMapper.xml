@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.TbCrdContractMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="tbCrdContractResultMap" type="org.git.modules.clm.credit.entity.TbCrdContract">
+        <id column="CONTRACT_NUM" property="contractNum"/>
+        <result column="APPROVE_ID" property="approveId"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="PRODUCT_NUM" property="productNum"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="EXCHANGE_RATE" property="exchangeRate"/>
+        <result column="CONTRACT_AMT" property="contractAmt"/>
+        <result column="CONTRACT_USED" property="contractUsed"/>
+        <result column="CONTRACT_AVI" property="contractAvi"/>
+        <result column="LOAN_TERM" property="loanTerm"/>
+        <result column="LOAN_TERM_UNIT" property="loanTermUnit"/>
+        <result column="BEGIN_DATE" property="beginDate"/>
+        <result column="END_DATE" property="endDate"/>
+        <result column="DEPOSIT_RATIO" property="depositRatio"/>
+        <result column="INDUSTRY" property="industry"/>
+        <result column="GUARANTEE_TYPE" property="guaranteeType"/>
+        <result column="MAIN_GUARANTEE_TYPE" property="mainGuaranteeType"/>
+        <result column="CONTRACT_BAL" property="contractBal"/>
+        <result column="CLASSIFY_RESULT" property="classifyResult"/>
+        <result column="CLOSE_DATE" property="closeDate"/>
+        <result column="CONTRACT_STATUS" property="contractStatus"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="IS_CYCLE" property="isCycle"/>
+        <result column="TRAN_DATE" property="tranDate"/>
+        <result column="TRAN_SYSTEM" property="tranSystem"/>
+    </resultMap>
+
+
+    <select id="selectTbCrdContractPage" resultMap="tbCrdContractResultMap">
+        select * from TB_CRD_CONTRACT where is_deleted = 0
+    </select>
+
+    <select id="selectContractDetailByCusNum" resultType="org.git.modules.clm.credit.vo.TbCrdContractVO">
+        select
+            t1.*,t2.CUSTOMER_NAME
+        from
+            TB_CRD_CONTRACT t1
+        left join
+            TB_CSM_PARTY t2
+        on
+            t1.CUSTOMER_NUM=t2.CUSTOMER_NUM
+        where
+            t1.CONTRACT_NUM = #{contractNum}
+    </select>
+
+    <select id="selectContractListByCusNum" resultType="org.git.modules.clm.credit.vo.TbCrdContractVO">
+        select
+            t1.*,t2.PRODUCT_NAME,t4.CRD_PRODUCT_NAME
+        from
+            TB_CRD_CONTRACT t1,
+            TB_PAR_PRODUCT t2,
+            TB_PAR_CRD_PRODUCT t3,
+            TB_PAR_CRD t4,
+            CHAIN_DEPT t5
+        where
+            t1.PRODUCT_NUM = t2.PRODUCT_NUM
+        and
+            t1.PRODUCT_NUM = t3.PRODUCT_NUM
+        and
+            t3.CRD_PRODUCT_NUM = t4.CRD_PRODUCT_NUM
+        and
+            t1.CUSTOMER_NUM = #{customerNum}
+        and
+            t1.ORG_NUM = t5.ID
+        and
+            t5.ANCESTORS like CONCAT(CONCAT('%', #{orgNum}), '%')
+    </select>
+
+    <!--查询合同详情-->
+    <select id="queryCrdContractDetail" resultType="org.git.modules.clm.credit.vo.TbCrdContractVO">
+        select
+            a.*,
+            b.product_num,
+            b.PRODUCT_NAME,
+            d.product_type,
+            c.customer_name
+        from
+                TB_CRD_CONTRACT a,
+                TB_PAR_PRODUCT b,
+                tb_csm_party c,
+                TB_CRD_APPROVE d,
+                CHAIN_DEPT cp
+        where a.product_num=b.product_num
+        and a.customer_num=c.customer_num
+        and a.APPROVE_ID = d.APPROVE_ID
+        and a.ORG_NUM =cp.id
+        and a.contract_num =#{contractNum}
+    </select>
+
+</mapper>

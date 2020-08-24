@@ -1,0 +1,21 @@
+#文档管理菜单
+INSERT INTO `chain_menu`(`id`, `parent_id`, `code`, `name`, `alias`, `path`, `source`, `sort`, `category`, `action`, `is_open`, `remark`, `is_deleted`) VALUES (1172681736431181825, 1123598815738675203, 'doc', '文档管理', '文档管理', '/doc/doc', 'iconfont iconicon_coinpurse_line', 0, 1, 0, 1, '', 0);
+INSERT INTO `chain_menu`(`id`, `parent_id`, `code`, `name`, `alias`, `path`, `source`, `sort`, `category`, `action`, `is_open`, `remark`, `is_deleted`) VALUES (1177478963891535874, 1172681736431181825, 'doc_dowload', '下载', '文档下载', '/api/git-doc/Doc/download', 'iconfont iconicon_next_arrow', 1, 2, 0, 1, '', 0);
+INSERT INTO `chain_menu`(`id`, `parent_id`, `code`, `name`, `alias`, `path`, `source`, `sort`, `category`, `action`, `is_open`, `remark`, `is_deleted`) VALUES (1177481982326603777, 1172681736431181825, 'doc_upload', '上传', '文档上传', '/api/git-doc/uploadSing', 'iconfont iconicon_roundadd', 2, 2, 0, 1, '', 0);
+INSERT INTO `chain_menu`(`id`, `parent_id`, `code`, `name`, `alias`, `path`, `source`, `sort`, `category`, `action`, `is_open`, `remark`, `is_deleted`) VALUES (1177485756063547394, 1172681736431181825, 'doc_delete', '删除', '文档删除', '/api/git-doc/delete_doc', 'iconfont iconicon_roundclose', 3, 2, 0, 1, '', 0);
+INSERT INTO `chain_menu`(`id`, `parent_id`, `code`, `name`, `alias`, `path`, `source`, `sort`, `category`, `action`, `is_open`, `remark`, `is_deleted`) VALUES (1177487180054921218, 1172681736431181825, 'doc_view', '预览', '文档预览', '/api/git-doc/download', 'iconfont iconicon_search', 5, 2, 0, 1, '', 0);
+INSERT INTO `chain_menu`(`id`, `parent_id`, `code`, `name`, `alias`, `path`, `source`, `sort`, `category`, `action`, `is_open`, `remark`, `is_deleted`) VALUES (1177487504689856513, 1172681736431181825, 'doc_release', '发布', '文档发布', '/api/git-doc/isReleases', 'iconfont iconicon_task', 6, 2, 0, 1, '', 0);
+INSERT INTO `chain_menu`(`id`, `parent_id`, `code`, `name`, `alias`, `path`, `source`, `sort`, `category`, `action`, `is_open`, `remark`, `is_deleted`) VALUES (1177487965408985090, 1172681736431181825, 'doc_query', '查询', '文档查询', '/api/git-doc/list', 'iconfont iconicon_search', 4, 2, 0, 1, '', 0);
+commit;
+
+#文档分类字典
+INSERT INTO `chain_dict`(`id`, `parent_id`, `code`, `dict_key`, `dict_value`, `sort`, `remark`, `is_deleted`) VALUES (1172725964922265601, 0, 'doc', -1, '文档管理', -1, '文档目录字典', 0);
+INSERT INTO `chain_dict`(`id`, `parent_id`, `code`, `dict_key`, `dict_value`, `sort`, `remark`, `is_deleted`) VALUES (1172727312262733826, 1172725964922265601, 'docCatalog', 1, '客户政策', 1, '', 0);
+INSERT INTO `chain_dict`(`id`, `parent_id`, `code`, `dict_key`, `dict_value`, `sort`, `remark`, `is_deleted`) VALUES (1172727469603659777, 1172725964922265601, 'docCatalog', 2, '产品政策', 2, '', 0);
+INSERT INTO `chain_dict`(`id`, `parent_id`, `code`, `dict_key`, `dict_value`, `sort`, `remark`, `is_deleted`) VALUES (1172727684322664450, 1172725964922265601, 'docCatalog', 3, '定价政策', 3, '', 0);
+INSERT INTO `chain_dict`(`id`, `parent_id`, `code`, `dict_key`, `dict_value`, `sort`, `remark`, `is_deleted`) VALUES (1172727765742493697, 1172725964922265601, 'docCatalog', 4, '区域政策', 4, '', 0);
+INSERT INTO `chain_dict`(`id`, `parent_id`, `code`, `dict_key`, `dict_value`, `sort`, `remark`, `is_deleted`) VALUES (1172727858398863362, 1172725964922265601, 'docCatalog', 5, '集团政策', 5, '', 0);
+INSERT INTO `chain_dict`(`id`, `parent_id`, `code`, `dict_key`, `dict_value`, `sort`, `remark`, `is_deleted`) VALUES (1172730095179243521, 1172725964922265601, 'docCatalog', 6, '银相政策', 6, '', 0);
+INSERT INTO `chain_dict`(`id`, `parent_id`, `code`, `dict_key`, `dict_value`, `sort`, `remark`, `is_deleted`) VALUES (1172730219473248258, 1172725964922265601, 'docCatalog', 7, '绿色政策', 7, '', 0);
+INSERT INTO `chain_dict`(`id`, `parent_id`, `code`, `dict_key`, `dict_value`, `sort`, `remark`, `is_deleted`) VALUES (1172730305435508738, 1172725964922265601, 'docCatalog', 8, '风险政策', 8, '', 0);
+commit;

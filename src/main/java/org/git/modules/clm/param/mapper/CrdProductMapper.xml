@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.param.mapper.CrdProductMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="crdProductResultMap" type="org.git.modules.clm.param.entity.CrdProduct">
+        <id column="id" property="id"/>
+        <result column="crd_product_num" property="crdProductNum"/>
+        <result column="PRODUCT_Num" property="productNum"/>
+        <result column="cust_type" property="custType"/>
+        <result column="main_guarantee_type" property="mainGuaranteeType"/>
+        <result column="product_type" property="productType"/>
+        <result column="user_num" property="userNum"/>
+        <result column="org_num" property="orgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="crdProductVoResultMap" type="org.git.modules.clm.param.vo.CrdProductVO">
+        <id column="id" property="id"/>
+        <result column="crd_product_num" property="crdProductNum"/>
+        <result column="PRODUCT_Num" property="productNum"/>
+        <result column="cust_type" property="custType"/>
+        <result column="main_guarantee_type" property="mainGuaranteeType"/>
+        <result column="product_type" property="productType"/>
+        <result column="user_num" property="userNum"/>
+        <result column="org_num" property="orgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="product_num" property="productNum"/>
+        <result column="product_name" property="productName"/>
+        <result column="product_descr" property="productDescr"/>
+        <result column="user_name" property="createUserName"/>
+        <result column="dept_name" property="createDeptName"/>
+        <result column="createTimeStr" property="createTimeStr"/>
+        <result column="updateTimeStr" property="updateTimeStr"/>
+    </resultMap>
+
+    <select id="selectCrdProductPage" resultMap="crdProductVoResultMap">
+        select t1.*,to_char(t1.create_time,'yyyy-MM-dd') createTimeStr,to_char(t1.update_time,'yyyy-MM-dd')
+        updateTimeStr
+        ,t2.product_name,t2.product_Descr,t3.name user_name,t4.dept_name
+        from tb_par_crd_product t1 left join tb_par_product t2 on t1.product_num=t2.product_num
+        left join chain_user t3 on t1.user_num=t3.id
+        left join chain_dept t4 on t1.org_num=t4.id
+        <if test="crdProduct.crdProductNum!=null">
+            where t1.crd_product_num =#{crdProduct.crdProductNum}
+        </if>
+    </select>
+
+    <delete id="deleteCrdProduct">
+        delete from tb_par_crd_product t where t.CRD_PRODUCT_NUM in(
+        select CRD_PRODUCT_NUM  from tb_par_crd t1 where t1.CRD_PRODUCT_NUM=#{crdProductNum} or t1.SUPER_CRD_NUM=#{crdProductNum}
+        )
+    </delete>
+
+    <!--根据业务品种查询额度数据-->
+    <select id="selectCrd" parameterType="org.git.modules.clm.param.entity.CrdProduct"
+            resultType="org.git.modules.clm.param.entity.Crd">
+        select distinct t2.* from tb_par_crd_product t1,tb_par_crd t2
+        where t1.CRD_PRODUCT_NUM=t2.CRD_PRODUCT_NUM
+        and t2.CRD_SYS_STATUS='1'
+        <if test="productNum!=null">
+            and t1.PRODUCT_NUM=#{productNum}
+        </if>
+        <if test="productType!=null">
+            and t1.product_type like CONCAT(CONCAT('%',#{productType}),'%')
+        </if>
+        <if test="mainGuaranteeType!=null">
+            and t1.main_guarantee_type like CONCAT(CONCAT('%',#{mainGuaranteeType}),'%')
+        </if>
+        <if test="custType!=null">
+            and substr(t2.CRD_PRODUCT_NUM,2,1) like CONCAT(CONCAT('%',#{custType}),'%')
+        </if>
+        <if test="projectType!=null">
+            and t1.project_type like CONCAT(CONCAT('%',#{projectType}),'%')
+        </if>
+        <if test="isLowRisk!=null">
+            and t2.is_Low_Risk like CONCAT(CONCAT('%',#{isLowRisk}),'%')
+        </if>
+        <if test="crdProductType!=null">
+            and t2.CRD_PRODUCT_TYPE like CONCAT(CONCAT('%',#{crdProductType}),'%')
+        </if>
+    </select>
+
+</mapper>

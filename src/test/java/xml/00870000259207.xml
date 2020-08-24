@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Service>
+    <Service_Header>
+        <EXTERNAL_RULE>OFF</EXTERNAL_RULE>
+        <msg_interval>30</msg_interval>
+        <msg_expiry>36000</msg_expiry>
+        <processes currentprocess="1" nextprocess="1" total="1">
+            <process id="1">
+                <end_timestamp/>
+                <process_timestamp>2020-01-14 19:35:00.218</process_timestamp>
+                <target_q>IBM.SERVICE.REQUEST.OUT.TYSX</target_q>
+                <sub_target_id/>
+                <target_id>0087</target_id>
+                <sub_service_sn>0114193604</sub_service_sn>
+                <async_reversal_service_id/>
+                <is_end>0</is_end>
+                <skip_to_process>0</skip_to_process>
+                <after_logic_class/>
+                <timeout>30000</timeout>
+                <reversal_seq>0</reversal_seq>
+                <key_service>0</key_service>
+                <status>INPROCESS</status>
+                <service_id>00870000259207</service_id>
+            </process>
+        </processes>
+        <msglog>1</msglog>
+        <timeout>30000</timeout>
+        <name>资金纯券转让</name>
+        <service_id>00870000259207</service_id>
+        <requester_id>0010</requester_id>
+        <channel_id>22</channel_id>
+        <service_time>2015-06-05 09:43:12.302</service_time>
+        <version_id>01</version_id>
+        <route_flag>99</route_flag>
+        <common/>
+        <service_response/>
+        <message_id>414d51204d515f5472616e73616374695e03193a23f363b8</message_id>
+        <correlation_id>000000000000000000000000000000000000000000000000</correlation_id>
+        <response_target>MIMQPUBRES01</response_target>
+        <service_sn>0114193604</service_sn>
+        <start_timestamp>2020-01-14 19:35:00.215</start_timestamp>
+    </Service_Header>
+    <Service_Body>
+        <ext_attributes>
+            <ExecGrp>EG</ExecGrp>
+            <Broker>ESB</Broker>
+            <req_serv_id>259207</req_serv_id>
+            <iterate_no>1</iterate_no>
+            <requester_id>0010</requester_id>
+            <channel_id>22</channel_id>
+            <ori_req_id>0010</ori_req_id>
+            <ori_cha_id>0088</ori_cha_id>
+            <req_servcode>FC0010</req_servcode>
+            <channel_servcode>FC0010</channel_servcode>
+            <ori_req_servcode/>
+            <ori_cha_servcode/>
+            <terminal_id/>
+            <branch_id/>
+            <operator_id/>
+            <sub_auth_teller/>
+            <auth_psw01/>
+            <bran_auth_teller/>
+            <auth_psw02/>
+            <cen_auth_teller01/>
+            <auth_psw03/>
+            <cen_auth_teller02/>
+            <ori_req_date>2019-11-26</ori_req_date>
+            <ori_req_sn>CR14803202001140007</ori_req_sn>
+            <ori_req_timestamp>2020-01-14 07:36:04.746</ori_req_timestamp>
+            <requester_date>2020-01-14</requester_date>
+            <requester_sn>0114193604</requester_sn>
+            <mac_value/>
+        </ext_attributes>
+        <request>
+            <busi_deal_num>FOP14803202001140001</busi_deal_num>
+            <tran_type_cd>08</tran_type_cd>
+            <tran_direction>1</tran_direction>
+            <bond_tran_infos>
+                <bond_tran_info>
+                    <bond_out_infos>
+                        <bond_out_info>
+                            <crd_out_org_num>01122</crd_out_org_num>
+                            <busi_source_req_num>SD01122202001160001</busi_source_req_num>
+                        </bond_out_info>
+
+                    </bond_out_infos>
+                    <bond_in_info>
+                        <crd_in_org_num>14803</crd_in_org_num>
+                        <busi_new_req_num>MD14803202001140009</busi_new_req_num>
+                    </bond_in_info>
+                </bond_tran_info>
+            </bond_tran_infos>
+        </request>
+        <response/>
+    </Service_Body>
+</Service>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.CrdGrantingSerialMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="crdGrantingSerialResultMap" type="org.git.modules.clm.credit.entity.CrdGrantingSerial">
+        <id column="GRANTING_SERIAL_ID" property="grantingSerialId"/>
+        <result column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="TRAN_DATE" property="tranDate"/>
+        <result column="BUSI_DEAL_NUM" property="busiDealNum"/>
+        <result column="TRAN_TYPE_CD" property="tranTypeCd"/>
+        <result column="CRD_GRANT_ORG_NUM" property="crdGrantOrgNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CRD_DETAIL_PRD" property="crdDetailPrd"/>
+        <result column="CRD_DETAIL_NUM" property="crdDetailNum"/>
+        <result column="CRD_CURRENCY_CD" property="crdCurrencyCd"/>
+        <result column="CRD_DETAIL_AMT" property="crdDetailAmt"/>
+        <result column="CRD_EARK_AMT" property="crdEarkAmt"/>
+        <result column="CRD_BEGIN_DATE" property="crdBeginDate"/>
+        <result column="CRD_END_DATE" property="crdEndDate"/>
+        <result column="CRD_STATUS" property="crdStatus"/>
+        <result column="CRD_ADMIT_FLAG" property="crdAdmitFlag"/>
+        <result column="TRAN_SYSTEM" property="tranSystem"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectCrdGrantingSerialPage" resultMap="crdGrantingSerialResultMap">
+        select * from TB_CRD_GRANTING_SERIAL where is_deleted = 0
+    </select>
+
+    <!--查询同业客户额度台账额度授信情况-->
+    <select id="findLedgerCrdGrantingSerialPage" resultType="org.git.modules.clm.credit.vo.CrdGrantingSerialVO">
+         select
+            t1.granting_serial_id,
+            t1.tran_seq_sn,
+            t1.tran_date,
+            t1.busi_deal_num,
+            t1.tran_type_cd,
+            t1.crd_grant_org_num,
+            t1.customer_num,
+            t1.crd_detail_prd,
+            t1.crd_detail_num,
+            t1.crd_currency_cd,
+            t1.crd_detail_amt,
+            t1.crd_eark_amt,
+            t1.crd_begin_date,
+            t1.crd_end_date,
+            t1.crd_status,
+            t1.crd_admit_flag,
+            t1.tran_system,
+            t1.create_time,
+            t1.update_time,
+            t3.user_num,                -- 经办人,
+            t2.crd_product_name,     -- 业务产品
+            t3.org_num
+        from
+            TB_CRD_GRANTING_SERIAL t1,
+            TB_PAR_CRD t2,
+            TB_CSM_MANAGE_TEAM t3,
+            CHAIN_DEPT t4
+        where t1.crd_detail_prd=t2.CRD_PRODUCT_NUM
+        and t1.customer_num=t3.customer_num
+        and t3.org_num = t4.id
+        and t1.CUSTOMER_NUM=#{customerNum}
+        and t4.ANCESTORS like CONCAT(CONCAT('%', #{orgNum}), '%')
+    </select>
+</mapper>

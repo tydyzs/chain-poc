@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmWarnInfoMapper">
+
+    <!-- 限额预警查询映射结果 -->
+    <resultMap id="rcmWarnInfoResultMap" type="org.git.modules.clm.rcm.vo.RcmWarnInfoVO">
+        <id column="WARN_NUM" property="warnNum"/>
+        <result column="QUOTA_NUM" property="quotaNum"/>
+        <result column="QUOTA_NAME" property="quotaName"/>
+        <result column="QUOTA_INDEX_NUM" property="quotaIndexNum"/>
+        <result column="QUOTA_USED_AMT" property="quotaUsedAmt"/>
+        <result column="QUOTA_FREE_AMT" property="quotaFreeAmt"/>
+        <result column="QUOTA_USED_RATIO" property="quotaUsedRatio"/>
+        <result column="QUOTA_FREE_RATIO" property="quotaFreeRatio"/>
+        <result column="QUOTA_TOTAL_SUM" property="quotaTotalSum"/>
+        <result column="QUOTA_TOTAL_TYPE" property="quotaTotalType"/>
+        <result column="USE_ORG_NUM" property="useOrgNum"/>
+        <result column="TRIGGER_TIME" property="triggerTime"/>
+        <result column="TRIGGER_LEVEL" property="triggerLevel"/>
+        <result column="QUOTA_CONTROL_AMT" property="quotaControlAmt"/>
+        <result column="QUOTA_CONTROL_RATIO" property="quotaControlRatio"/>
+        <result column="TRIGGER_AMT" property="triggerAmt"/>
+        <result column="TRIGGER_RATIO" property="triggerRatio"/>
+        <result column="TRIGGER_CONTROL_NODE" property="triggerControlNode"/>
+        <result column="NODE_MEASURE" property="nodeMeasure"/>
+        <result column="MEASURE_LEVEL" property="measureLevel"/>
+        <result column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="BIZ_NUM" property="bizNum"/>
+        <result column="BIZ_TYPE" property="bizType"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="PARTY_NAME" property="partyName"/>
+        <result column="PRODUCT_NUM" property="productNum"/>
+        <result column="AMT" property="amt"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="RECO_YEAR" property="recoYear"/>
+        <result column="RECO_MONTH" property="recoMonth"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="REMARK" property="remark"/>
+        <result column="QUOTA_INDEX_NAME" property="quotaIndexName"/>
+        <result column="HIS_FREQUENCY" property="hisFrequency"/>
+        <result column="QUOTA_INDEX_TYPE" property="quotaIndexType"/>
+        <result column="QUOTA_FREE_RATIO" property="quotaFreeRatio"/>
+        <result column="QUOTA_USED_RATIO" property="quotaUsedRatio"/>
+        <result column="START_DATE" property="startDate"/>
+        <result column="INVALID_DATE" property="invalidDate"/>
+        <result column="QUOTA_STATE" property="quotaState"/>
+    </resultMap>
+
+    <sql id="baseSql">
+        select t1.*,
+            t2.QUOTA_INDEX_NAME,
+            t2.QUOTA_INDEX_TYPE,
+            t3.HIS_FREQUENCY,
+            t3.QUOTA_FREE_RATIO,
+            t3.QUOTA_USED_RATIO,
+            t3.START_DATE,
+            t3.INVALID_DATE,
+            t3.QUOTA_STATE
+        from TB_RCM_WARN_INFO t1,
+             TB_RCM_INDEX t2 ,
+             TB_RCM_CONFIG t3
+        where t1.QUOTA_INDEX_NUM = t2.QUOTA_INDEX_NUM
+            and t1.QUOTA_NUM = t3.QUOTA_NUM
+        <choose>
+            <when test='rcmWarnInfo.useOrgNum == null or rcmWarnInfo.useOrgNum == ""'>
+                <!--页面传入机构号为空-->
+                and t1.USE_ORG_NUM = #{rcmWarnInfo.userOrgNum}
+            </when>
+            <when test='rcmWarnInfo.userOrgType == "1"'>
+                <!--登录用户机构类型为省联社-->
+                <!--页面传入机构号不为空-->
+                and t1.USE_ORG_NUM = #{rcmWarnInfo.useOrgNum}
+            </when>
+            <when test='rcmWarnInfo.userOrgType == "2"'>
+                <!--登录用户机构类型为信用社-->
+                <!--页面传入机构号不为空-->
+                and exists (select 1
+                from CHAIN_DEPT d
+                where d.PARENT_ID = #{rcmWarnInfo.userOrgNum}
+                and d.ID = #{rcmWarnInfo.useOrgNum}
+                and t1.USE_ORG_NUM = #{rcmWarnInfo.useOrgNum}
+                )
+            </when>
+            <when test='rcmWarnInfo.userOrgType == "3"'>
+                <!--登录用户机构类型为成员行-->
+                <!--页面传入机构号不为空,且页面传入机构与登录用户机构所属成员行相同-->
+                and t1.USE_ORG_NUM = #{rcmWarnInfo.useOrgNum}
+                and #{rcmWarnInfo.userOrgNum} = #{rcmWarnInfo.useOrgNum}
+                <!--<include refid="userOrgTypeEqualsThree"/>-->
+            </when>
+        </choose>
+    </sql>
+
+    <select id="queryRcmWarnDetail" resultMap="rcmWarnInfoResultMap">
+        <include refid="baseSql"></include>
+        <if test="rcmWarnInfo.warnNum != null and rcmWarnInfo.warnNum != ''">
+            and T1.WARN_NUM = #{rcmWarnInfo.warnNum}
+        </if>
+    </select>
+    <!--按条件查询限额预警信息表-->
+    <select id="queryRcmWarnInfo" resultMap="rcmWarnInfoResultMap">
+        <include refid="baseSql"></include>
+        <if test="rcmWarnInfo.quotaName != null and rcmWarnInfo.quotaName != ''">
+            and t1.QUOTA_NAME like CONCAT(CONCAT('%',#{rcmWarnInfo.quotaName}),'%')
+        </if>
+        <if test="rcmWarnInfo.triggerLevel != null and rcmWarnInfo.triggerLevel != ''">
+            and t1.TRIGGER_LEVEL =#{rcmWarnInfo.triggerLevel}
+        </if>
+        <if test="rcmWarnInfo.triggerTimeStart != null and rcmWarnInfo.triggerTimeStart != ''">
+            and t1.TRIGGER_TIME > to_date(#{rcmWarnInfo.triggerTimeStart},'yyyy-MM-dd')
+        </if>
+        <if test="rcmWarnInfo.triggerTimeEnd != null and rcmWarnInfo.triggerTimeEnd != ''">
+            and t1.TRIGGER_TIME <![CDATA[<]]> to_date(#{rcmWarnInfo.triggerTimeEnd},'yyyy-MM-dd')
+        </if>
+        order by t1.TRIGGER_TIME desc
+    </select>
+
+    <select id="countByQuotaNum" resultType="int">
+        select count(1) from TB_RCM_WARN_INFO where QUOTA_NUM = #{quotaNum}
+    </select>
+    <!--登录机构为成员行-->
+    <!--<sql id="userOrgTypeEqualsThree">
+        <choose>
+            <when test="rcmWarnInfo.useOrgNum != null and rcmWarnInfo.useOrgNum != '' and rcmWarnInfo.useOrgNum == rcmWarnInfo.userOrgNum">
+                &lt;!&ndash;页面传入机构号不为空,且页面传入机构与登录用户机构所属成员行相同&ndash;&gt;
+                and exists (select 1
+                            from CHAIN_DEPT d
+                            where d.ANCESTORS like CONCAT(CONCAT('%,',#{queryVO.orgNum}),',%')
+                            and t1.USE_ORG_NUM = d.ID
+                            )
+            </when>
+            <when test="rcmWarnInfo.useOrgNum != null and rcmWarnInfo.useOrgNum != '' and rcmWarnInfo.useOrgNum != queryVO.userOrgNum">
+                &lt;!&ndash;页面传入机构号不为空,且页面传入机构与登录用户机构所属成员行不同&ndash;&gt;
+                and 1 = 0
+            </when>
+            <when test='rcmWarnInfo.useOrgNum == null or rcmWarnInfo.useOrgNum == ""'>
+                &lt;!&ndash;页面传入机构号为空&ndash;&gt;
+                and exists (select 1
+                            from CHAIN_DEPT d
+                            where d.ANCESTORS like CONCAT(CONCAT('%,',#{rcmWarnInfo.userOrgNum}),',%')
+                            and t1.USE_ORG_NUM = d.ID
+                            )
+            </when>
+        </choose>
+    </sql>-->
+
+</mapper>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmConfigParaHisMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="rcmConfigurationParaHisResultMap" type="org.git.modules.clm.rcm.entity.RcmConfigParaHis">
+        <id column="SUB_PARA_NUM" jdbcType="VARCHAR" property="subParaNum" />
+        <result column="QUOTA_NUM" jdbcType="VARCHAR" property="quotaNum" />
+        <result column="QUOTA_INDEX_NUM" jdbcType="VARCHAR" property="quotaIndexNum" />
+        <result column="USE_ORG_NUM" jdbcType="VARCHAR" property="useOrgNum" />
+        <result column="QUOTA_LEVEL" jdbcType="VARCHAR" property="quotaLevel" />
+        <result column="QUOTA_CONTROL_AMT" jdbcType="DECIMAL" property="quotaControlAmt" />
+        <result column="QUOTA_CONTROL_RATIO" jdbcType="DECIMAL" property="quotaControlRatio" />
+        <result column="QUOTA_CONTROL_TYPE" jdbcType="VARCHAR" property="quotaControlType" />
+        <result column="CONTROL_NODE" jdbcType="VARCHAR" property="controlNode" />
+        <result column="NODE_MEASURE" jdbcType="VARCHAR" property="nodeMeasure" />
+        <result column="MEASURE_LEVEL" jdbcType="VARCHAR" property="measureLevel" />
+        <result column="EXPLAIN_INFO" jdbcType="VARCHAR" property="explainInfo" />
+        <result column="USER_NUM" jdbcType="VARCHAR" property="userNum" />
+        <result column="ORG_NUM" jdbcType="VARCHAR" property="orgNum" />
+        <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+        sub_para_num, quota_num, quota_index_num, use_ORG_NUM, quota_level, quota_control_amt,
+        quota_control_ratio,quota_control_type, control_node, node_measure, measure_level, explain_info, user_num,
+        org_num, update_time, create_time
+    </sql>
+
+    <select id="selectRcmControlHisPage" resultMap="rcmConfigurationParaHisResultMap">
+        select <include refid="Base_Column_List"/>  from TB_RCM_CONFIG_PARA_HIS
+    </select>
+
+    <insert id="moveToHis">
+        insert
+            into
+                TB_RCM_CONFIG_PARA_HIS
+                (HIS_ID,MAIN_HIS_ID,<include refid="Base_Column_List"/>)
+            select
+                FNC_GET_BIZ_NUM('HI'),#{rcmConfigParaHis.mainHisId},<include refid="Base_Column_List"/>
+            from
+                TB_RCM_CONFIG_PARA
+            where QUOTA_NUM = #{rcmConfigParaHis.quotaNum}
+    </insert>
+
+    <select id="selectOneRcmControl" resultType="org.git.modules.clm.rcm.vo.RcmConfigParaHisVO">
+        select
+            quota_index_num,
+            use_ORG_NUM,
+            quota_level,
+            listagg(sub_para_num, ',') within group(order by quota_level)  as sub_para_num,
+            min(quota_num)                                                 as quota_num,
+            min(quota_control_amt)                                         as quota_control_amt,
+            min(quota_control_ratio)                                       as quota_control_ratio,
+            min(quota_control_type)                                        as quota_control_type,
+            min(node_measure)                                              as node_measure,
+            listagg(measure_level, ',') within group(order by quota_level) as measure_level,
+            min(explain_info)                                              as explain_info,
+            min(user_num)                                                  as user_num,
+            min(org_num)                                                   as org_num,
+            min(update_time)                                               as update_time,
+            listagg(control_node, ',') within group(order by quota_level)  as control_node
+        from
+            TB_RCM_CONFIG_PARA_HIS
+        where 1 = 1
+            <if test="rcmConfigParaHisVO.mainHisId!=null">
+                and MAIN_HIS_ID = #{rcmConfigParaHisVO.mainHisId}
+            </if>
+        group by
+            quota_index_num,
+            quota_level,
+            use_ORG_NUM,
+            update_time
+    </select>
+</mapper>

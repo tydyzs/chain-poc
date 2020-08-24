@@ -1,0 +1,27 @@
+#数据源配置
+spring:
+  redis:
+    ##redis 单机环境配置
+    host: 127.0.0.1
+    port: 6379
+    password:
+    database: 0
+    ssl: false
+    ##redis 集群环境配置
+    #cluster:
+    #  nodes: 127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003
+    #  commandTimeout: 5000
+  datasource:
+    url: jdbc:db2://106.12.241.109:50000/clmdb:currentSchema=CLM;currentFunctionPath=CLM;
+    username: db2inst1
+    password: dbserver
+    driver-class-name: com.ibm.db2.jcc.DB2Driver
+
+#chain配置
+chain:
+  prop:
+    upload-domain: http://localhost:8888
+    remote-mode: true
+    remote-path: /usr/share/nginx/html
+    remote-path-iis: D://iis/html
+    log-mode: true

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.TbCrdStatisMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="tbCrdStatisResultMap" type="org.git.modules.clm.credit.entity.TbCrdStatis">
+        <id column="STATIS_ID" property="statisId"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="APPROVE_COUNT" property="approveCount"/>
+        <result column="APPROVE_EXP_AMOUNT" property="approveExpAmount"/>
+        <result column="CREDIT_EXP_BALANCE" property="creditExpBalance"/>
+        <result column="LOAN_EXP_BALANCE" property="loanExpBalance"/>
+        <result column="LIMIT_CREDIT" property="limitCredit"/>
+        <result column="LIMIT_AVI" property="limitAvi"/>
+        <result column="LIMIT_USED" property="limitUsed"/>
+        <result column="EXP_USED" property="expUsed"/>
+        <result column="EXP_AVI" property="expAvi"/>
+        <result column="PRODUCT_NUM" property="productNum"/>
+        <result column="CRD_DETAIL_PRD" property="crdDetailPrd"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="INDUSTRY" property="industry"/>
+        <result column="CUSTOMER_TYPE" property="customerType"/>
+        <result column="GUARANTEE_TYPE" property="guaranteeType"/>
+        <result column="UNIT_SCALE" property="unitScale"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectTbCrdStatisPage" resultMap="tbCrdStatisResultMap">
+        select * from TB_CRD_STATIS where is_deleted = 0
+    </select>
+
+</mapper>

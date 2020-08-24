@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.loan.mapper.CrdProjectEventMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="crdProjectEventResultMap" type="org.git.modules.clm.loan.entity.CrdProjectEvent">
+        <id column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="OP_TYPE" property="opType"/>
+        <result column="PROJECT_NUM" property="projectNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CRD_MAIN_PRD" property="crdMainPrd"/>
+        <result column="CRD_MAIN_NUM" property="crdMainNum"/>
+        <result column="CRD_DETAIL_PRD" property="crdDetailPrd"/>
+        <result column="CRD_DETAIL_NUM" property="crdDetailNum"/>
+        <result column="AGREEMENT_NAME" property="agreementName"/>
+        <result column="PROJECT_TYPE" property="projectType"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="TOTAL_AMT" property="totalAmt"/>
+        <result column="USED_AMT" property="usedAmt"/>
+        <result column="AVI_AMT" property="aviAmt"/>
+        <result column="LIMIT_CONTROL_TYPE" property="limitControlType"/>
+        <result column="AGREEMENT_TERM" property="agreementTerm"/>
+        <result column="AGREEMENT_TERM_UNIT" property="agreementTermUnit"/>
+        <result column="PROJECT_STATUS" property="projectStatus"/>
+        <result column="TRAN_DATE" property="tranDate"/>
+        <result column="TRAN_SYSTEM" property="tranSystem"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectCrdProjectEventPage" resultMap="crdProjectEventResultMap">
+        select * from TB_CRD_PROJECT_EVENT where is_deleted = 0
+    </select>
+
+</mapper>

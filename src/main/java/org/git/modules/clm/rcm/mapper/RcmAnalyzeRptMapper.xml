@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmAnalyzeRptMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="rcmAnonymityRiskExposureRptResultMap"
+               type="org.git.modules.clm.rcm.entity.RcmAnonymityRiskExposureRpt">
+        <id column="INFO_NUM" property="infoNum"/>
+        <result column="CRD_BALANCE" property="crdBalance"/>
+        <result column="CRD_BALANCE_LAST_MONTH" property="crdBalanceLastMonth"/>
+        <result column="TOTAL_MONTH" property="totalMonth"/>
+        <result column="TOTAL_YEAR" property="totalYear"/>
+        <result column="USE_ORG_NUM" property="useOrgNum"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="REMARK" property="remark"/>
+    </resultMap>
+
+    <!--生成当月限额数据-->
+    <select id="selectRcmConfigMonthData" resultType="org.git.modules.clm.rcm.entity.RcmConfigTotal">
+        select a.*,
+               b.NET_CAPITAL,
+               b.NET_PRIMARY_CAPITAL,
+               b.NET_ASSETS,
+               nvl(c.TIMES1, 0) HIS_FREQUENCY_A3,
+               nvl(c.TIMES2, 0) HIS_FREQUENCY_B3,
+               nvl(c.TIMES3, 0) HIS_FREQUENCY_C3
+        from TB_RCM_CONFIG a
+                 left join TB_RCM_NET_CAPITAL b on a.USE_ORG_NUM = b.USE_ORG_NUM and b.NET_STATE = '1'
+                 left join (select t.QUOTA_NUM,
+                                   max(case when t.TRIGGER_LEVEL = '1' then times end) TIMES1,
+                                   max(case when t.TRIGGER_LEVEL = '2' then times end) TIMES2,
+                                   max(case when t.TRIGGER_LEVEL = '3' then times end) TIMES3
+                            from (select QUOTA_NUM, TRIGGER_LEVEL, count(1) times
+                                  from TB_RCM_WARN_INFO
+                                  where RECO_YEAR = #{year}
+                                    and RECO_MONTH = #{month}
+                                  group by QUOTA_NUM, TRIGGER_LEVEL) t
+                            group by QUOTA_NUM
+        ) c on c.QUOTA_NUM = a.QUOTA_NUM
+    </select>
+
+
+    <select id="selectRcmCusQuotaRpt" resultType="org.git.modules.clm.rcm.entity.RcmCusQuotaRpt">
+        <include refid="selectRcmCusQuotaRpt"/>
+    </select>
+
+    <select id="selectRcmLoanTenCusRpt" parameterType="int"
+            resultType="org.git.modules.clm.rcm.entity.RcmLoanTenCusRpt">
+        select t1.ROW_NUM,
+               t1.ORG_NUM,
+               t1.CUSTOMER_NUM,
+               t3.CUSTOMER_NAME,
+               nvl(t1.LOAN_EXP_BALANCE, 0) LOAN_BALANCE,
+               nvl(t2.LOAN_EXP_BALANCE, 0) LOAN_BALANCE_LAST_MONTH
+        from (select ROW_NUMBER() OVER (PARTITION BY ORG_NUM ORDER BY LOAN_EXP_BALANCE desc) ROW_NUM, a.*
+              from tb_crd_statis_csm a) t1
+                 left join TB_CRD_STATIS_CSM_HS t2 on t2.ORG_NUM = t1.ORG_NUM
+            and t2.CUSTOMER_NUM = t1.CUSTOMER_NUM
+            and t2.YEAR = year(to_date(FNC_GET_BUSI_DATE(), 'yyyy-mm-dd') - 1 month)
+            and t2.MONTH = month(to_date(FNC_GET_BUSI_DATE(), 'yyyy-mm-dd') - 1 month)
+                 left join TB_CSM_PARTY t3 on t3.CUSTOMER_NUM = t1.CUSTOMER_NUM
+        where t1.ROW_NUM &lt;= 10
+
+    </select>
+
+    <select id="selectRcmCreditTenCusRpt" parameterType="int"
+            resultType="org.git.modules.clm.rcm.entity.RcmCreditTenCusRpt">
+        select t1.ROW_NUM,
+               t1.ORG_NUM,
+               t1.CUSTOMER_NUM,
+               t3.CUSTOMER_NAME,
+               nvl(t1.CREDIT_EXP_BALANCE, 0) LOAN_BALANCE,
+               nvl(t2.CREDIT_EXP_BALANCE, 0) LOAN_BALANCE_LAST_MONTH
+        from (select ROW_NUMBER() OVER (PARTITION BY ORG_NUM ORDER BY CREDIT_EXP_BALANCE desc) ROW_NUM, a.*
+              from tb_crd_statis_csm a) t1
+                 left join TB_CRD_STATIS_CSM_HS t2 on t2.ORG_NUM = t1.ORG_NUM
+            and t2.CUSTOMER_NUM = t1.CUSTOMER_NUM
+            and t2.YEAR = year(to_date(FNC_GET_BUSI_DATE(), 'yyyy-mm-dd') - 1 month)
+            and t2.MONTH = month(to_date(FNC_GET_BUSI_DATE(), 'yyyy-mm-dd') - 1 month)
+                 left join TB_CSM_PARTY t3 on t3.CUSTOMER_NUM = t1.CUSTOMER_NUM
+        where t1.ROW_NUM &lt;= 10
+
+    </select>
+
+    <select id="selectRcmCreditTenGroupCusRpt" parameterType="int"
+            resultType="org.git.modules.clm.rcm.entity.RcmCreditTenGroupCusRpt">
+        select t1.ROW_NUM,
+               t1.ORG_NUM,
+               t1.CUSTOMER_NUM,
+               t1.CUSTOMER_NAME,
+               nvl(t1.CREDIT_EXP_BALANCE, 0) LOAN_BALANCE,
+               nvl(t2.CREDIT_EXP_BALANCE, 0) LOAN_BALANCE_LAST_MONTH
+        from (select ROW_NUMBER() OVER (PARTITION BY t.ORG_NUM ORDER BY t.CREDIT_EXP_BALANCE desc) ROW_NUM,
+                     t.*
+              from (select a.ORG_NUM,
+                           c.CUSTOMER_NUM,
+                           c.CUSTOMER_NAME,
+                           sum(a.CREDIT_EXP_BALANCE) CREDIT_EXP_BALANCE
+                    from TB_CRD_STATIS_CSM a,
+                         TB_CSM_GROUP_MEMBER b,
+                         TB_CSM_PARTY c
+                    where a.CUSTOMER_NUM = b.MEMBER_CUSTOMER_NUM
+                      and c.CUSTOMER_NUM = b.CUSTOMER_NUM
+                    group by a.ORG_NUM, c.CUSTOMER_NUM, c.CUSTOMER_NAME) t) t1
+                 left join (
+            select a.ORG_NUM,
+                   c.CUSTOMER_NUM,
+                   c.CUSTOMER_NAME,
+                   sum(a.CREDIT_EXP_BALANCE) CREDIT_EXP_BALANCE
+            from TB_CRD_STATIS_CSM_HS a,
+                 TB_CSM_GROUP_MEMBER b,
+                 TB_CSM_PARTY c
+            where a.CUSTOMER_NUM = b.MEMBER_CUSTOMER_NUM
+              and c.CUSTOMER_NUM = b.CUSTOMER_NUM
+              and a.YEAR = year(to_date(FNC_GET_BUSI_DATE(), 'yyyy-mm-dd') - 1 month)
+              and a.MONTH = month(to_date(FNC_GET_BUSI_DATE(), 'yyyy-mm-dd') - 1 month)
+            group by a.ORG_NUM, c.CUSTOMER_NUM, c.CUSTOMER_NAME) t2
+                           on t1.org_num = t2.org_num and t1.customer_num = t2.customer_num
+        where t1.ROW_NUM &lt;= 10
+
+    </select>
+
+    <select id="selectRcmRiskExposureRpt" parameterType="int"
+            resultType="org.git.modules.clm.rcm.entity.RcmRiskExposureRpt">
+
+
+    </select>
+
+    <select id="selectRcmIndustryQuotaBaseRpt" resultType="org.git.modules.clm.rcm.entity.RcmIndustryQuotaBaseRpt">
+        select sum(nvl(rc.AMT, 0))    CRD_BALANCE,
+               sum(nvl(rc.RATIO, 0))  CRD_RATIO,
+               sum(nvl(rc.QUOTA_LEVEL_A_AMT, 0))    QUOTA_LEVEL_A_AMT,
+               sum(nvl(rc.QUOTA_LEVEL_A_RATIO, 0))  QUOTA_LEVEL_A_RATIO,
+               sum(nvl(rc.QUOTA_LEVEL_B_AMT, 0))    QUOTA_LEVEL_B_AMT,
+               sum(nvl(rc.QUOTA_LEVEL_B_RATIO, 0))  QUOTA_LEVEL_B_RATIO,
+               sum(nvl(rc.QUOTA_LEVEL_C_AMT, 0))    QUOTA_LEVEL_C_AMT,
+               sum(nvl(rc.QUOTA_LEVEL_C_RATIO, 0))  QUOTA_LEVEL_C_RATIO,
+               rc.USE_ORG_NUM
+        from (<include refid="selectRcmCusQuotaRpt"/>) rc
+        where rc.QUOTA_INDEX_NUM in
+        <foreach collection="quotaIndexNum" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        group by rc.USE_ORG_NUM
+    </select>
+
+    <select id="selectRcmIndustryQuotaDetailRpt" resultType="org.git.modules.clm.rcm.entity.RcmIndustryQuotaDetailRpt">
+        select t.USE_ORG_NUM,
+               t.QUOTA_INDEX_NUM as QUOTA_NUM,
+               t.AMT             as BIZ_BALANCE,
+               t.RATIO           as INDUSTRY_QUOTA,
+               t.QUOTA_LEVEL_A_AMT,
+               t.QUOTA_LEVEL_A_RATIO,
+               t.QUOTA_LEVEL_B_AMT,
+               t.QUOTA_LEVEL_B_RATIO,
+               t.QUOTA_LEVEL_C_AMT,
+               t.QUOTA_LEVEL_C_RATIO
+        from (<include refid="selectRcmCusQuotaRpt"/>) t
+    </select>
+
+    <sql id="selectRcmCusQuotaRpt">
+        select t1.USE_ORG_NUM,
+               t1.QUOTA_INDEX_NUM,
+               t1.AMT,
+               t1.RATIO,
+               t2.QUOTA_LEVEL_A_AMT,
+               t2.QUOTA_LEVEL_A_RATIO,
+               t2.QUOTA_LEVEL_B_AMT,
+               t2.QUOTA_LEVEL_B_RATIO,
+               t2.QUOTA_LEVEL_C_AMT,
+               t2.QUOTA_LEVEL_C_RATIO
+        from (
+               select a.USE_ORG_NUM,
+                      a.QUOTA_INDEX_NUM,
+                      sum(a.QUOTA_USED_AMT)   as AMT,
+                      sum(a.QUOTA_USED_RATIO) as RATIO
+               from TB_RCM_CONFIG a
+               where a.QUOTA_STATE = '0'
+               <if test="quotaIndexNum != null">
+                   and QUOTA_INDEX_NUM in
+                   <foreach collection="quotaIndexNum" index="index" item="item" open="(" separator="," close=")">
+                       #{item}
+                   </foreach>
+               </if>
+               group by a.USE_ORG_NUM, a.QUOTA_INDEX_NUM) t1
+        left join
+        (
+               select t.USE_ORG_NUM,
+                      t.QUOTA_INDEX_NUM,
+                      sum(t.QUOTA_LEVEL_A_AMT)   as QUOTA_LEVEL_A_AMT,
+                      sum(t.QUOTA_LEVEL_B_AMT)   as QUOTA_LEVEL_B_AMT,
+                      sum(t.QUOTA_LEVEL_C_AMT)   as QUOTA_LEVEL_C_AMT,
+                      sum(t.QUOTA_LEVEL_A_RATIO) as QUOTA_LEVEL_A_RATIO,
+                      sum(t.QUOTA_LEVEL_B_RATIO) as QUOTA_LEVEL_B_RATIO,
+                      sum(t.QUOTA_LEVEL_C_RATIO) as QUOTA_LEVEL_C_RATIO
+               from (
+                      select p.USE_ORG_NUM,
+                             p.QUOTA_INDEX_NUM,
+                             p.QUOTA_LEVEL,
+                             case when p.QUOTA_LEVEL = '1' then sum(p.QUOTA_CONTROL_AMT) end   QUOTA_LEVEL_A_AMT,
+                             case when p.QUOTA_LEVEL = '2' then sum(p.QUOTA_CONTROL_AMT) end   QUOTA_LEVEL_B_AMT,
+                             case when p.QUOTA_LEVEL = '3' then sum(p.QUOTA_CONTROL_AMT) end   QUOTA_LEVEL_C_AMT,
+                             case when p.QUOTA_LEVEL = '1' then sum(p.QUOTA_CONTROL_RATIO) end QUOTA_LEVEL_A_RATIO,
+                             case when p.QUOTA_LEVEL = '2' then sum(p.QUOTA_CONTROL_RATIO) end QUOTA_LEVEL_B_RATIO,
+                             case when p.QUOTA_LEVEL = '3' then sum(p.QUOTA_CONTROL_RATIO) end QUOTA_LEVEL_C_RATIO
+                      from TB_RCM_CONFIG_PARA p
+                      <if test="quotaIndexNum != null">
+                          where QUOTA_INDEX_NUM in
+                          <foreach collection="quotaIndexNum" index="index" item="item" open="(" separator="," close=")">
+                              #{item}
+                          </foreach>
+                      </if>
+                      group by p.USE_ORG_NUM, p.QUOTA_INDEX_NUM, p.QUOTA_LEVEL) t
+               group by t.USE_ORG_NUM, t.QUOTA_INDEX_NUM) t2
+        on t1.USE_ORG_NUM = t2.USE_ORG_NUM
+        and t1.QUOTA_INDEX_NUM = t2.QUOTA_INDEX_NUM
+    </sql>
+
+</mapper>

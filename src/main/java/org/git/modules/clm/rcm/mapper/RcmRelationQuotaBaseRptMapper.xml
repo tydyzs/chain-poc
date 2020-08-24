@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmRelationQuotaBaseRptMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="rcmRelationQuotaBaseRptResultMap" type="org.git.modules.clm.rcm.entity.RcmRelationQuotaBaseRpt">
+        <id column="INFO_NUM" property="infoNum"/>
+        <result column="QUOTA_NUM" property="quotaNum"/>
+        <result column="CUSTOMER_NAME" property="customerName"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CRD_BALANCE_AMT" property="crdBalanceAmt"/>
+        <result column="CRD_BALANCE_RATIO" property="crdBalanceRatio"/>
+        <result column="TOTAL_MONTH" property="totalMonth"/>
+        <result column="TOTAL_YEAR" property="totalYear"/>
+        <result column="USE_ORG_NUM" property="useOrgNum"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UDPATE_TIME" property="udpateTime"/>
+        <result column="REMARK" property="remark"/>
+    </resultMap>
+
+
+    <select id="selectRcmRelationQuotaBaseRptPage" resultMap="rcmRelationQuotaBaseRptResultMap">
+        select * from TB_RCM_RELATION_QUOTA_BASE_RPT where is_deleted = 0
+    </select>
+
+</mapper>

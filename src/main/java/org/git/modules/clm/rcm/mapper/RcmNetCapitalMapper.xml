@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmNetCapitalMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="rcmNetCapitalVOResultMap" type="org.git.modules.clm.rcm.vo.RcmNetCapitalVO">
+        <result column="NET_CAPITAL" jdbcType="DECIMAL" property="netCapital" />
+        <result column="NET_PRIMARY_CAPITAL" jdbcType="DECIMAL" property="netPrimaryCapital" />
+        <result column="NET_ASSETS" jdbcType="DECIMAL" property="netAssets" />
+        <result column="ORG_NUM" jdbcType="VARCHAR" property="orgNum" />
+        <result column="FULL_NAME" jdbcType="VARCHAR" property="fullName" />
+        <result column="NET_STATE" jdbcType="VARCHAR" property="netState" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="USER_NUM" jdbcType="VARCHAR" property="userNum" />
+        <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="CREATE_TIME" jdbcType="DATE" property="createTime" />
+        <result column="USE_DATE" jdbcType="DATE" property="useDate" />
+    </resultMap>
+
+    <select id="selectRcmNetCapitalPage" resultMap="rcmNetCapitalVOResultMap" >
+        select
+        nc.net_capital,
+        nc.net_primary_capital,
+        nc.net_assets,
+        nc.org_num,
+        nc.net_state,
+        nc.REMARK,
+        nc.user_num,
+        nc.UPDATE_TIME,
+        nc.CREATE_TIME,
+        nc.USE_DATE,
+        d.full_name,
+        u.real_name,
+        d2.full_name as modifyFullName
+        from
+        tb_rcm_net_capital nc
+        left join chain_dept d on nc.org_num = d.id
+        left join chain_user u on nc.user_num = u.id
+        left join chain_dept d2 on d2.id = u.dept_id
+        where 1=1
+        <if test="rcmNetCapital.fullName!=null">
+            and d.full_name like concat(concat('%', #{rcmNetCapital.fullName}), '%')
+        </if>
+        <if test="rcmNetCapital.orgNum!=null">
+            and nc.org_num = #{rcmNetCapital.orgNum}
+        </if>
+        <if test="rcmNetCapital.createTime!=null">
+            <![CDATA[ and nc.CREATE_TIME >= #{rcmNetCapital.createTimeGt}
+            and nc.CREATE_TIME <  #{rcmNetCapital.createTimeLt}  ]]>
+        </if>
+        <if test="rcmNetCapital.netState!=null">
+            and nc.net_state = #{rcmNetCapital.netState}
+        </if>
+    </select>
+
+
+</mapper>

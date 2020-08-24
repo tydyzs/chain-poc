@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.chart.mapper.OrgChartMapper">
+
+    <!--    机构额度视图-地区维度-->
+    <select id="getStatisArea" resultType="org.git.modules.clm.chart.vo.CrdStatisAreaVO">
+    select a.AERA_CODE               id,
+           t.DICT_VALUE              area_name,
+           '0'                       parent_id,
+           '顶级'                       parent_name,
+           sum(b.APPROVE_EXP_AMOUNT) APPROVE_EXP_AMOUNT,
+           sum(b.CREDIT_EXP_BALANCE) CREDIT_EXP_BALANCE,
+           sum(b.LOAN_EXP_BALANCE)   LOAN_EXP_BALANCE,
+           sum(b.LIMIT_CREDIT)       LIMIT_CREDIT,
+           sum(b.LIMIT_AVI)          LIMIT_AVI,
+           sum(b.LIMIT_USED)         LIMIT_USED,
+           sum(b.EXP_USED)           EXP_USED,
+           sum(b.EXP_AVI)            EXP_AVI,
+           sum(b.INDIVIDUAL_COUNT)   INDIVIDUAL_COUNT,
+           sum(b.CORPORATION_COUNT)  CORPORATION_COUNT,
+           sum(b.BANK_COUNT)         BANK_COUNT
+    from CHAIN_DICT t
+             left join CHAIN_DEPT a on a.AERA_CODE = t.DICT_KEY
+             left join TB_CRD_STATIS_ORG b on a.ID = b.ORG_NUM and b.DATA_TYPE = '1'
+    where t.CODE = 'CD000221'
+      and a.AERA_CODE is not null
+    group by a.AERA_CODE, t.DICT_VALUE
+    union all
+    select b.ORG_NUM    id,
+           a.DEPT_NAME area_name,
+           a.AERA_CODE  parent_id,
+           t.DICT_VALUE parent_name,
+           b.APPROVE_EXP_AMOUNT,
+           b.CREDIT_EXP_BALANCE,
+           b.LOAN_EXP_BALANCE,
+           b.LIMIT_CREDIT,
+           b.LIMIT_AVI,
+           b.LIMIT_USED,
+           b.EXP_USED,
+           b.EXP_AVI,
+           b.INDIVIDUAL_COUNT,
+           b.CORPORATION_COUNT,
+           b.BANK_COUNT
+    from CHAIN_DICT t,
+         CHAIN_DEPT a,
+         TB_CRD_STATIS_ORG b
+    where a.AERA_CODE = t.DICT_KEY
+      and a.ID = b.ORG_NUM
+      and t.CODE = 'CD000221'
+    and b.DATA_TYPE = '1'
+    </select>
+
+    <!--    机构额度视图-机构维度-->
+    <select id="getStatisOrg" parameterType="java.lang.String"
+            resultType="org.git.modules.clm.credit.entity.TbCrdStatisOrg">
+        select sum(t.APPROVE_EXP_AMOUNT) APPROVE_EXP_AMOUNT,
+        sum(t.CREDIT_EXP_BALANCE) CREDIT_EXP_BALANCE,
+        sum(t.LOAN_EXP_BALANCE) LOAN_EXP_BALANCE,
+        sum(t.LIMIT_CREDIT) LIMIT_CREDIT,
+        sum(t.LIMIT_AVI) LIMIT_AVI,
+        sum(t.LIMIT_USED) LIMIT_USED,
+        sum(t.EXP_USED) EXP_USED,
+        sum(t.EXP_AVI) EXP_AVI,
+        sum(t.INDIVIDUAL_COUNT) INDIVIDUAL_COUNT,
+        sum(t.CORPORATION_COUNT) CORPORATION_COUNT,
+        sum(t.BANK_COUNT) BANK_COUNT
+        from TB_CRD_STATIS_ORG t,
+        CHAIN_DEPT a
+        where t.ORG_NUM = a.ID
+        and t.DATA_TYPE = '1'
+        <if test="orgNum!=null and orgNum!=''">
+            and a.ANCESTORS like concat(concat('%', #{orgNum}), '%')
+        </if>
+    </select>
+
+    <!--    机构额度视图-行业维度-->
+    <select id="listStatisIndustry" parameterType="java.lang.String"
+            resultType="org.git.modules.clm.chart.vo.CrdStatisVO">
+    select s.industry,--维度
+            FNC_GET_DICT_TRANS(s.INDUSTRY,'CD000015') key_name,
+           sum(s.APPROVE_EXP_AMOUNT)                                                 APPROVE_EXP_AMOUNT,--批复敞口金额（本期）
+           sum(s.APPROVE_EXP_AMOUNT_tq)                                              APPROVE_EXP_AMOUNT_tq,--批复敞口金额（同期）
+           sum(s.APPROVE_EXP_AMOUNT_nc)                                              APPROVE_EXP_AMOUNT_nc,--批复敞口金额（年初）
+           sum(s.APPROVE_EXP_AMOUNT_sq)                                              APPROVE_EXP_AMOUNT_sq,--批复敞口金额（上期）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_tq)) APPROVE_EXP_AMOUNT_tqup,--批复敞口金额（同期增幅）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_nc)) APPROVE_EXP_AMOUNT_ncup,--批复敞口金额（年初增幅）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_sq)) APPROVE_EXP_AMOUNT_squp,--批复敞口金额（上期增幅）
+
+           sum(s.CREDIT_EXP_BALANCE)                                                 CREDIT_EXP_BALANCE,--授信敞口余额
+           sum(s.CREDIT_EXP_BALANCE_tq)                                              CREDIT_EXP_BALANCE_tq,--授信敞口余额（同期）
+           sum(s.CREDIT_EXP_BALANCE_nc)                                              CREDIT_EXP_BALANCE_nc,--授信敞口余额（年初）
+           sum(s.CREDIT_EXP_BALANCE_sq)                                              CREDIT_EXP_BALANCE_sq,--授信敞口余额（上期）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_tq)) CREDIT_EXP_BALANCE_tqup,--授信敞口余额（同期增幅）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_nc)) CREDIT_EXP_BALANCE_ncup,--授信敞口余额（年初增幅）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_sq)) CREDIT_EXP_BALANCE_squp,--授信敞口余额（上期增幅）
+
+           sum(s.LOAN_EXP_BALANCE)                                                   LOAN_EXP_BALANCE,--贷款敞口余额（本期）
+           sum(s.LOAN_EXP_BALANCE_tq)                                                LOAN_EXP_BALANCE_tq,--贷款敞口余额（同期）
+           sum(s.LOAN_EXP_BALANCE_nc)                                                LOAN_EXP_BALANCE_nc,--贷款敞口余额（年初）、
+           sum(s.LOAN_EXP_BALANCE_sq)                                                LOAN_EXP_BALANCE_sq,--贷款敞口余额（上期）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_tq)) LOAN_EXP_BALANCE_tqup,--贷款敞口余额（同期增幅）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_nc)) LOAN_EXP_BALANCE_ncup,--贷款敞口余额（年初增幅）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_sq)) LOAN_EXP_BALANCE_squp,--贷款敞口余额（上期增幅）
+           sum(s.LIMIT_CREDIT)                                                   LIMIT_CREDIT,--授信额度（本期）
+           sum(s.LIMIT_CREDIT_tq)                                                LIMIT_CREDIT_tq,--授信额度（同期）
+           sum(s.LIMIT_CREDIT_nc)                                                LIMIT_CREDIT_nc,--授信额度（年初）
+           sum(s.LIMIT_CREDIT_sq)                                                LIMIT_CREDIT_sq,--授信额度（上期）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_tq)) LIMIT_CREDIT_tqup,--授信额度（同期增幅）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_nc)) LIMIT_CREDIT_ncup,--授信额度（年初增幅）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_sq)) LIMIT_CREDIT_squp--授信额度（上期增幅）
+    from (
+             select t.industry,--维度
+                    nvl(t.APPROVE_EXP_AMOUNT, 0)  APPROVE_EXP_AMOUNT,--批复敞口金额（本期）
+                    nvl(a1.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_tq,--批复敞口金额（同期）
+                    nvl(a2.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_nc,--批复敞口金额（年初）
+                    nvl(a3.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_sq,--批复敞口金额（上期）
+                    nvl(t.CREDIT_EXP_BALANCE, 0)  CREDIT_EXP_BALANCE,--授信敞口余额
+                    nvl(a1.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_tq,--授信敞口余额（同期）
+                    nvl(a2.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_nc,--授信敞口余额（年初）
+                    nvl(a3.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_sq,--授信敞口余额（上期）
+                    nvl(t.LOAN_EXP_BALANCE, 0)    LOAN_EXP_BALANCE,--贷款敞口余额（本期）
+                    nvl(a1.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_tq,--贷款敞口余额（同期）
+                    nvl(a2.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_nc,--贷款敞口余额（年初）
+                    nvl(a3.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_sq,--贷款敞口余额（上期）
+                    nvl(t.LIMIT_CREDIT, 0)    LIMIT_CREDIT,--授信额度（本期）
+                    nvl(a1.LIMIT_CREDIT, 0)   LIMIT_CREDIT_tq,--授信额度（同期）
+                    nvl(a2.LIMIT_CREDIT, 0)   LIMIT_CREDIT_nc,--授信额度（年初）
+                    nvl(a3.LIMIT_CREDIT, 0)   LIMIT_CREDIT_sq--授信额度（上期）
+             from CHAIN_DEPT a,
+                  tb_crd_statis_industry T
+                      left join(select *
+                                from tb_crd_statis_industry a
+                                where a.DATA_TYPE = '2'
+                                  and a.YEAR = FNC_GET_HS_DATE('1', 'Y')
+                                  and a.MONTH = FNC_GET_HS_DATE('1', 'M')) a1
+                               on t.ORG_NUM = t.ORG_NUM and t.industry = a1.industry
+                      left join(select *
+                                from tb_crd_statis_industry a
+                                where a.DATA_TYPE = '2'
+                                  and a.YEAR = FNC_GET_HS_DATE('2', 'Y')
+                                  and a.MONTH = FNC_GET_HS_DATE('2', 'M')) a2
+                               on t.ORG_NUM = t.ORG_NUM and t.industry = a2.industry
+                      left join(select *
+                                from tb_crd_statis_industry a
+                                where a.DATA_TYPE = '2'
+                                  and a.YEAR = FNC_GET_HS_DATE('3', 'Y')
+                                  and a.MONTH = FNC_GET_HS_DATE('3', 'M')) a3
+                               on t.ORG_NUM = t.ORG_NUM and t.industry = a3.industry
+             where t.DATA_TYPE = '1'
+               and a.ID = t.ORG_NUM
+               and a.ANCESTORS like CONCAT(CONCAT('%', #{orgNum}), '%')
+         ) s
+    group by s.industry
+    order by sum(s.LIMIT_CREDIT) desc
+    </select>
+
+    <!--    机构额度视图-额度品种-->
+    <select id="listStatisCrdpt" parameterType="java.lang.String" resultType="org.git.modules.clm.chart.vo.CrdStatisVO">
+    select s.crd_detail_prd,--维度
+            FNC_GET_DICT_TRANS(s.crd_detail_prd,'crd') key_name,
+           sum(s.APPROVE_EXP_AMOUNT)                                                 APPROVE_EXP_AMOUNT,--批复敞口金额（本期）
+           sum(s.APPROVE_EXP_AMOUNT_tq)                                              APPROVE_EXP_AMOUNT_tq,--批复敞口金额（同期）
+           sum(s.APPROVE_EXP_AMOUNT_nc)                                              APPROVE_EXP_AMOUNT_nc,--批复敞口金额（年初）
+           sum(s.APPROVE_EXP_AMOUNT_sq)                                              APPROVE_EXP_AMOUNT_sq,--批复敞口金额（上期）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_tq)) APPROVE_EXP_AMOUNT_tqup,--批复敞口金额（同期增幅）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_nc)) APPROVE_EXP_AMOUNT_ncup,--批复敞口金额（年初增幅）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_sq)) APPROVE_EXP_AMOUNT_squp,--批复敞口金额（上期增幅）
+
+           sum(s.CREDIT_EXP_BALANCE)                                                 CREDIT_EXP_BALANCE,--授信敞口余额
+           sum(s.CREDIT_EXP_BALANCE_tq)                                              CREDIT_EXP_BALANCE_tq,--授信敞口余额（同期）
+           sum(s.CREDIT_EXP_BALANCE_nc)                                              CREDIT_EXP_BALANCE_nc,--授信敞口余额（年初）
+           sum(s.CREDIT_EXP_BALANCE_sq)                                              CREDIT_EXP_BALANCE_sq,--授信敞口余额（上期）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_tq)) CREDIT_EXP_BALANCE_tqup,--授信敞口余额（同期增幅）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_nc)) CREDIT_EXP_BALANCE_ncup,--授信敞口余额（年初增幅）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_sq)) CREDIT_EXP_BALANCE_squp,--授信敞口余额（上期增幅）
+
+           sum(s.LOAN_EXP_BALANCE)                                                   LOAN_EXP_BALANCE,--贷款敞口余额（本期）
+           sum(s.LOAN_EXP_BALANCE_tq)                                                LOAN_EXP_BALANCE_tq,--贷款敞口余额（同期）
+           sum(s.LOAN_EXP_BALANCE_nc)                                                LOAN_EXP_BALANCE_nc,--贷款敞口余额（年初）、
+           sum(s.LOAN_EXP_BALANCE_sq)                                                LOAN_EXP_BALANCE_sq,--贷款敞口余额（上期）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_tq)) LOAN_EXP_BALANCE_tqup,--贷款敞口余额（同期增幅）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_nc)) LOAN_EXP_BALANCE_ncup,--贷款敞口余额（年初增幅）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_sq)) LOAN_EXP_BALANCE_squp,--贷款敞口余额（上期增幅）
+
+           sum(s.LIMIT_CREDIT)                                                   LIMIT_CREDIT,--授信额度（本期）
+           sum(s.LIMIT_CREDIT_tq)                                                LIMIT_CREDIT_tq,--授信额度（同期）
+           sum(s.LIMIT_CREDIT_nc)                                                LIMIT_CREDIT_nc,--授信额度（年初）
+           sum(s.LIMIT_CREDIT_sq)                                                LIMIT_CREDIT_sq,--授信额度（上期）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_tq)) LIMIT_CREDIT_tqup,--授信额度（同期增幅）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_nc)) LIMIT_CREDIT_ncup,--授信额度（年初增幅）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_sq)) LIMIT_CREDIT_squp--授信额度（上期增幅）
+
+    from (
+             select t.crd_detail_prd,--维度
+                    nvl(t.APPROVE_EXP_AMOUNT, 0)  APPROVE_EXP_AMOUNT,--批复敞口金额（本期）
+                    nvl(a1.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_tq,--批复敞口金额（同期）
+                    nvl(a2.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_nc,--批复敞口金额（年初）
+                    nvl(a3.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_sq,--批复敞口金额（上期）
+                    nvl(t.CREDIT_EXP_BALANCE, 0)  CREDIT_EXP_BALANCE,--授信敞口余额
+                    nvl(a1.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_tq,--授信敞口余额（同期）
+                    nvl(a2.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_nc,--授信敞口余额（年初）
+                    nvl(a3.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_sq,--授信敞口余额（上期）
+                    nvl(t.LOAN_EXP_BALANCE, 0)    LOAN_EXP_BALANCE,--贷款敞口余额（本期）
+                    nvl(a1.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_tq,--贷款敞口余额（同期）
+                    nvl(a2.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_nc,--贷款敞口余额（年初）
+                    nvl(a3.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_sq,--贷款敞口余额（上期）
+                    nvl(t.LIMIT_CREDIT, 0)    LIMIT_CREDIT,--授信额度（本期）
+                    nvl(a1.LIMIT_CREDIT, 0)   LIMIT_CREDIT_tq,--授信额度（同期）
+                    nvl(a2.LIMIT_CREDIT, 0)   LIMIT_CREDIT_nc,--授信额度（年初）
+                    nvl(a3.LIMIT_CREDIT, 0)   LIMIT_CREDIT_sq--授信额度（上期）
+                    from CHAIN_DEPT a, tb_crd_statis_crdpt T
+                     left join(select *
+                               from tb_crd_statis_crdpt a
+                               where a.DATA_TYPE = '2'
+                                 and a.YEAR  = FNC_GET_HS_DATE('1','Y')
+                                and a.MONTH = FNC_GET_HS_DATE('1','M')) a1
+                              on t.ORG_NUM = t.ORG_NUM and t.crd_detail_prd = a1.crd_detail_prd
+                     left join(select *
+                               from tb_crd_statis_crdpt a
+                               where a.DATA_TYPE = '2'
+                                 and a.YEAR  = FNC_GET_HS_DATE('2','Y')
+                                and a.MONTH = FNC_GET_HS_DATE('2','M')) a2
+                              on t.ORG_NUM = t.ORG_NUM and t.crd_detail_prd = a2.crd_detail_prd
+                     left join(select *
+                               from tb_crd_statis_crdpt a
+                               where a.DATA_TYPE = '2'
+                                 and a.YEAR  = FNC_GET_HS_DATE('3','Y')
+                                and a.MONTH = FNC_GET_HS_DATE('3','M')) a3
+                              on t.ORG_NUM = t.ORG_NUM and t.crd_detail_prd = a3.crd_detail_prd
+            where t.DATA_TYPE = '1'
+            and a.ID = t.ORG_NUM
+            and a.ANCESTORS  like CONCAT(CONCAT('%',#{orgNum}),'%'))s
+            group by s.crd_detail_prd
+             order by sum(s.LIMIT_CREDIT) desc
+    </select>
+
+
+    <!--    机构额度视图-客户类型-->
+    <select id="listStatisCustype" parameterType="java.lang.String"
+            resultType="org.git.modules.clm.chart.vo.CrdStatisVO">
+                 select s.customer_type,--维度
+            FNC_GET_DICT_TRANS(s.customer_type,'CD000212') key_name,
+           sum(s.APPROVE_EXP_AMOUNT)                                                 APPROVE_EXP_AMOUNT,--批复敞口金额（本期）
+           sum(s.APPROVE_EXP_AMOUNT_tq)                                              APPROVE_EXP_AMOUNT_tq,--批复敞口金额（同期）
+           sum(s.APPROVE_EXP_AMOUNT_nc)                                              APPROVE_EXP_AMOUNT_nc,--批复敞口金额（年初）
+           sum(s.APPROVE_EXP_AMOUNT_sq)                                              APPROVE_EXP_AMOUNT_sq,--批复敞口金额（上期）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_tq)) APPROVE_EXP_AMOUNT_tqup,--批复敞口金额（同期增幅）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_nc)) APPROVE_EXP_AMOUNT_ncup,--批复敞口金额（年初增幅）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_sq)) APPROVE_EXP_AMOUNT_squp,--批复敞口金额（上期增幅）
+
+           sum(s.CREDIT_EXP_BALANCE)                                                 CREDIT_EXP_BALANCE,--授信敞口余额
+           sum(s.CREDIT_EXP_BALANCE_tq)                                              CREDIT_EXP_BALANCE_tq,--授信敞口余额（同期）
+           sum(s.CREDIT_EXP_BALANCE_nc)                                              CREDIT_EXP_BALANCE_nc,--授信敞口余额（年初）
+           sum(s.CREDIT_EXP_BALANCE_sq)                                              CREDIT_EXP_BALANCE_sq,--授信敞口余额（上期）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_tq)) CREDIT_EXP_BALANCE_tqup,--授信敞口余额（同期增幅）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_nc)) CREDIT_EXP_BALANCE_ncup,--授信敞口余额（年初增幅）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_sq)) CREDIT_EXP_BALANCE_squp,--授信敞口余额（上期增幅）
+
+           sum(s.LOAN_EXP_BALANCE)                                                   LOAN_EXP_BALANCE,--贷款敞口余额（本期）
+           sum(s.LOAN_EXP_BALANCE_tq)                                                LOAN_EXP_BALANCE_tq,--贷款敞口余额（同期）
+           sum(s.LOAN_EXP_BALANCE_nc)                                                LOAN_EXP_BALANCE_nc,--贷款敞口余额（年初）、
+           sum(s.LOAN_EXP_BALANCE_sq)                                                LOAN_EXP_BALANCE_sq,--贷款敞口余额（上期）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_tq)) LOAN_EXP_BALANCE_tqup,--贷款敞口余额（同期增幅）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_nc)) LOAN_EXP_BALANCE_ncup,--贷款敞口余额（年初增幅）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_sq)) LOAN_EXP_BALANCE_squp,--贷款敞口余额（上期增幅）
+
+           sum(s.LIMIT_CREDIT)                                                   LIMIT_CREDIT,--授信额度（本期）
+           sum(s.LIMIT_CREDIT_tq)                                                LIMIT_CREDIT_tq,--授信额度（同期）
+           sum(s.LIMIT_CREDIT_nc)                                                LIMIT_CREDIT_nc,--授信额度（年初）
+           sum(s.LIMIT_CREDIT_sq)                                                LIMIT_CREDIT_sq,--授信额度（上期）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_tq)) LIMIT_CREDIT_tqup,--授信额度（同期增幅）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_nc)) LIMIT_CREDIT_ncup,--授信额度（年初增幅）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_sq)) LIMIT_CREDIT_squp--授信额度（上期增幅）
+    from (
+             select t.customer_type,--维度
+                    nvl(t.APPROVE_EXP_AMOUNT, 0)  APPROVE_EXP_AMOUNT,--批复敞口金额（本期）
+                    nvl(a1.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_tq,--批复敞口金额（同期）
+                    nvl(a2.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_nc,--批复敞口金额（年初）
+                    nvl(a3.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_sq,--批复敞口金额（上期）
+                    nvl(t.CREDIT_EXP_BALANCE, 0)  CREDIT_EXP_BALANCE,--授信敞口余额
+                    nvl(a1.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_tq,--授信敞口余额（同期）
+                    nvl(a2.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_nc,--授信敞口余额（年初）
+                    nvl(a3.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_sq,--授信敞口余额（上期）
+                    nvl(t.LOAN_EXP_BALANCE, 0)    LOAN_EXP_BALANCE,--贷款敞口余额（本期）
+                    nvl(a1.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_tq,--贷款敞口余额（同期）
+                    nvl(a2.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_nc,--贷款敞口余额（年初）、
+                    nvl(a3.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_sq,--贷款敞口余额（上期）
+                    nvl(t.LIMIT_CREDIT, 0)    LIMIT_CREDIT,--授信额度（本期）
+                    nvl(a1.LIMIT_CREDIT, 0)   LIMIT_CREDIT_tq,--授信额度（同期）
+                    nvl(a2.LIMIT_CREDIT, 0)   LIMIT_CREDIT_nc,--授信额度（年初）
+                    nvl(a3.LIMIT_CREDIT, 0)   LIMIT_CREDIT_sq--授信额度（上期）
+                 from CHAIN_DEPT a, tb_crd_statis_custype T
+                 left join(select *
+                           from tb_crd_statis_custype a
+                           where a.DATA_TYPE = '2'
+                             and a.YEAR  = FNC_GET_HS_DATE('1','Y')
+                             and a.MONTH = FNC_GET_HS_DATE('1','M')
+                             ) a1
+                          on t.ORG_NUM = t.ORG_NUM and t.customer_type = a1.customer_type
+                 left join(select *
+                           from tb_crd_statis_custype a
+                           where a.DATA_TYPE = '2'
+                             and a.YEAR  = FNC_GET_HS_DATE('2','Y')
+                            and a.MONTH = FNC_GET_HS_DATE('2','M')) a2
+                          on t.ORG_NUM = t.ORG_NUM and t.customer_type = a2.customer_type
+                 left join(select *
+                           from tb_crd_statis_custype a
+                           where a.DATA_TYPE = '2'
+                             and a.YEAR  = FNC_GET_HS_DATE('3','Y')
+                            and a.MONTH = FNC_GET_HS_DATE('3','M')) a3
+                          on t.ORG_NUM = t.ORG_NUM and t.customer_type = a3.customer_type
+        where t.DATA_TYPE = '2'
+        and a.ID = t.ORG_NUM
+        and a.ANCESTORS  like CONCAT(CONCAT('%',#{orgNum}),'%'))s
+        group by s.customer_type
+         order by sum(s.LIMIT_CREDIT) desc
+    </select>
+
+    <!--    机构额度视图-担保方式-->
+    <select id="listStatisGtype" parameterType="java.lang.String" resultType="org.git.modules.clm.chart.vo.CrdStatisVO">
+        select s.guarantee_type,--维度
+            FNC_GET_DICT_TRANS(s.guarantee_type,'CD000100') key_name,
+           sum(s.APPROVE_EXP_AMOUNT)                                                 APPROVE_EXP_AMOUNT,--批复敞口金额（本期）
+           sum(s.APPROVE_EXP_AMOUNT_tq)                                              APPROVE_EXP_AMOUNT_tq,--批复敞口金额（同期）
+           sum(s.APPROVE_EXP_AMOUNT_nc)                                              APPROVE_EXP_AMOUNT_nc,--批复敞口金额（年初）
+           sum(s.APPROVE_EXP_AMOUNT_sq)                                              APPROVE_EXP_AMOUNT_sq,--批复敞口金额（上期）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_tq)) APPROVE_EXP_AMOUNT_tqup,--批复敞口金额（同期增幅）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_nc)) APPROVE_EXP_AMOUNT_ncup,--批复敞口金额（年初增幅）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_sq)) APPROVE_EXP_AMOUNT_squp,--批复敞口金额（上期增幅）
+
+           sum(s.CREDIT_EXP_BALANCE)                                                 CREDIT_EXP_BALANCE,--授信敞口余额
+           sum(s.CREDIT_EXP_BALANCE_tq)                                              CREDIT_EXP_BALANCE_tq,--授信敞口余额（同期）
+           sum(s.CREDIT_EXP_BALANCE_nc)                                              CREDIT_EXP_BALANCE_nc,--授信敞口余额（年初）
+           sum(s.CREDIT_EXP_BALANCE_sq)                                              CREDIT_EXP_BALANCE_sq,--授信敞口余额（上期）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_tq)) CREDIT_EXP_BALANCE_tqup,--授信敞口余额（同期增幅）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_nc)) CREDIT_EXP_BALANCE_ncup,--授信敞口余额（年初增幅）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_sq)) CREDIT_EXP_BALANCE_squp,--授信敞口余额（上期增幅）
+
+           sum(s.LOAN_EXP_BALANCE)                                                   LOAN_EXP_BALANCE,--贷款敞口余额（本期）
+           sum(s.LOAN_EXP_BALANCE_tq)                                                LOAN_EXP_BALANCE_tq,--贷款敞口余额（同期）
+           sum(s.LOAN_EXP_BALANCE_nc)                                                LOAN_EXP_BALANCE_nc,--贷款敞口余额（年初）、
+           sum(s.LOAN_EXP_BALANCE_sq)                                                LOAN_EXP_BALANCE_sq,--贷款敞口余额（上期）
+            FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_tq)) LOAN_EXP_BALANCE_tqup,--贷款敞口余额（同期增幅）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_nc)) LOAN_EXP_BALANCE_ncup,--贷款敞口余额（年初增幅）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_sq)) LOAN_EXP_BALANCE_squp,--贷款敞口余额（上期增幅）
+
+           sum(s.LIMIT_CREDIT)                                                   LIMIT_CREDIT,--授信额度（本期）
+           sum(s.LIMIT_CREDIT_tq)                                                LIMIT_CREDIT_tq,--授信额度（同期）
+           sum(s.LIMIT_CREDIT_nc)                                                LIMIT_CREDIT_nc,--授信额度（年初）
+           sum(s.LIMIT_CREDIT_sq)                                                LIMIT_CREDIT_sq,--授信额度（上期）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_tq)) LIMIT_CREDIT_tqup,--授信额度（同期增幅）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_nc)) LIMIT_CREDIT_ncup,--授信额度（年初增幅）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_sq)) LIMIT_CREDIT_squp--授信额度（上期增幅）
+    from (
+             select t.guarantee_type,--维度
+                    nvl(t.APPROVE_EXP_AMOUNT, 0)  APPROVE_EXP_AMOUNT,--批复敞口金额（本期）
+                    nvl(a1.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_tq,--批复敞口金额（同期）
+                    nvl(a2.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_nc,--批复敞口金额（年初）
+                    nvl(a3.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_sq,--批复敞口金额（上期）
+                    nvl(t.CREDIT_EXP_BALANCE, 0)  CREDIT_EXP_BALANCE,--授信敞口余额
+                    nvl(a1.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_tq,--授信敞口余额（同期）
+                    nvl(a2.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_nc,--授信敞口余额（年初）
+                    nvl(a3.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_sq,--授信敞口余额（上期）
+                    nvl(t.LOAN_EXP_BALANCE, 0)    LOAN_EXP_BALANCE,--贷款敞口余额（本期）
+                    nvl(a1.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_tq,--贷款敞口余额（同期）
+                    nvl(a2.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_nc,--贷款敞口余额（年初）、
+                    nvl(a3.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_sq,--贷款敞口余额（上期）
+                    nvl(t.LIMIT_CREDIT, 0)    LIMIT_CREDIT,--授信额度（本期）
+                    nvl(a1.LIMIT_CREDIT, 0)   LIMIT_CREDIT_tq,--授信额度（同期）
+                    nvl(a2.LIMIT_CREDIT, 0)   LIMIT_CREDIT_nc,--授信额度（年初）
+                    nvl(a3.LIMIT_CREDIT, 0)   LIMIT_CREDIT_sq--授信额度（上期）
+                        from CHAIN_DEPT a, tb_crd_Statis_gtype T
+                 left join(select *
+                           from tb_crd_Statis_gtype a
+                           where a.DATA_TYPE = '2'
+                             and a.YEAR  = FNC_GET_HS_DATE('1','Y')
+                            and a.MONTH = FNC_GET_HS_DATE('1','M')) a1
+                          on t.ORG_NUM = t.ORG_NUM and t.guarantee_type = a1.guarantee_type
+                 left join(select *
+                           from tb_crd_Statis_gtype a
+                           where a.DATA_TYPE = '2'
+                             and a.YEAR  = FNC_GET_HS_DATE('2','Y')
+                            and a.MONTH = FNC_GET_HS_DATE('2','M')) a2
+                          on t.ORG_NUM = t.ORG_NUM and t.guarantee_type = a2.guarantee_type
+                 left join(select *
+                           from tb_crd_Statis_gtype a
+                           where a.DATA_TYPE = '2'
+                             and a.YEAR  = FNC_GET_HS_DATE('3','Y')
+                            and a.MONTH = FNC_GET_HS_DATE('3','M')) a3
+                          on t.ORG_NUM = t.ORG_NUM and t.guarantee_type = a3.guarantee_type
+        where t.DATA_TYPE = '2'
+        and a.ID = t.ORG_NUM
+        and a.ANCESTORS  like CONCAT(CONCAT('%',#{orgNum}),'%'))s
+        group by s.guarantee_type
+         order by sum(s.LIMIT_CREDIT) desc
+    </select>
+
+    <!--    机构额度视图-企业规模-->
+    <select id="listStatisUscale" parameterType="java.lang.String"
+            resultType="org.git.modules.clm.chart.vo.CrdStatisVO">
+                   select s.unit_scale,--维度
+            FNC_GET_DICT_TRANS(s.unit_scale,'CD000020') key_name,
+           sum(s.APPROVE_EXP_AMOUNT)                                                 APPROVE_EXP_AMOUNT,--批复敞口金额（本期）
+           sum(s.APPROVE_EXP_AMOUNT_tq)                                              APPROVE_EXP_AMOUNT_tq,--批复敞口金额（同期）
+           sum(s.APPROVE_EXP_AMOUNT_nc)                                              APPROVE_EXP_AMOUNT_nc,--批复敞口金额（年初）
+           sum(s.APPROVE_EXP_AMOUNT_sq)                                              APPROVE_EXP_AMOUNT_sq,--批复敞口金额（上期）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_tq)) APPROVE_EXP_AMOUNT_tqup,--批复敞口金额（同期增幅）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_nc)) APPROVE_EXP_AMOUNT_ncup,--批复敞口金额（年初增幅）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_sq)) APPROVE_EXP_AMOUNT_squp,--批复敞口金额（上期增幅）
+
+           sum(s.CREDIT_EXP_BALANCE)                                                 CREDIT_EXP_BALANCE,--授信敞口余额
+           sum(s.CREDIT_EXP_BALANCE_tq)                                              CREDIT_EXP_BALANCE_tq,--授信敞口余额（同期）
+           sum(s.CREDIT_EXP_BALANCE_nc)                                              CREDIT_EXP_BALANCE_nc,--授信敞口余额（年初）
+           sum(s.CREDIT_EXP_BALANCE_sq)                                              CREDIT_EXP_BALANCE_sq,--授信敞口余额（上期）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_tq)) CREDIT_EXP_BALANCE_tqup,--授信敞口余额（同期增幅）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_nc)) CREDIT_EXP_BALANCE_ncup,--授信敞口余额（年初增幅）
+           FNC_GET_DIVISION(sum(s.CREDIT_EXP_BALANCE), sum(s.CREDIT_EXP_BALANCE_sq)) CREDIT_EXP_BALANCE_squp,--授信敞口余额（上期增幅）
+
+           sum(s.LOAN_EXP_BALANCE)                                                   LOAN_EXP_BALANCE,--贷款敞口余额（本期）
+           sum(s.LOAN_EXP_BALANCE_tq)                                                LOAN_EXP_BALANCE_tq,--贷款敞口余额（同期）
+           sum(s.LOAN_EXP_BALANCE_nc)                                                LOAN_EXP_BALANCE_nc,--贷款敞口余额（年初）、
+           sum(s.LOAN_EXP_BALANCE_sq)                                                LOAN_EXP_BALANCE_sq,--贷款敞口余额（上期）
+            FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_tq)) LOAN_EXP_BALANCE_tqup,--贷款敞口余额（同期增幅）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_nc)) LOAN_EXP_BALANCE_ncup,--贷款敞口余额（年初增幅）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_sq)) LOAN_EXP_BALANCE_squp,--贷款敞口余额（上期增幅）
+
+           sum(s.LIMIT_CREDIT)                                                   LIMIT_CREDIT,--授信额度（本期）
+           sum(s.LIMIT_CREDIT_tq)                                                LIMIT_CREDIT_tq,--授信额度（同期）
+           sum(s.LIMIT_CREDIT_nc)                                                LIMIT_CREDIT_nc,--授信额度（年初）
+           sum(s.LIMIT_CREDIT_sq)                                                LIMIT_CREDIT_sq,--授信额度（上期）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_tq)) LIMIT_CREDIT_tqup,--授信额度（同期增幅）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_nc)) LIMIT_CREDIT_ncup,--授信额度（年初增幅）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_sq)) LIMIT_CREDIT_squp--授信额度（上期增幅）
+    from (
+             select t.unit_scale,--维度
+                    nvl(t.APPROVE_EXP_AMOUNT, 0)  APPROVE_EXP_AMOUNT,--批复敞口金额（本期）
+                    nvl(a1.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_tq,--批复敞口金额（同期）
+                    nvl(a2.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_nc,--批复敞口金额（年初）
+                    nvl(a3.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_sq,--批复敞口金额（上期）
+                    nvl(t.CREDIT_EXP_BALANCE, 0)  CREDIT_EXP_BALANCE,--授信敞口余额
+                    nvl(a1.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_tq,--授信敞口余额（同期）
+                    nvl(a2.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_nc,--授信敞口余额（年初）
+                    nvl(a3.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_sq,--授信敞口余额（上期）
+                    nvl(t.LOAN_EXP_BALANCE, 0)    LOAN_EXP_BALANCE,--贷款敞口余额（本期）
+                    nvl(a1.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_tq,--贷款敞口余额（同期）
+                    nvl(a2.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_nc,--贷款敞口余额（年初）、
+                    nvl(a3.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_sq,--贷款敞口余额（上期）
+                    nvl(t.LIMIT_CREDIT, 0)    LIMIT_CREDIT,--授信额度（本期）
+                    nvl(a1.LIMIT_CREDIT, 0)   LIMIT_CREDIT_tq,--授信额度（同期）
+                    nvl(a2.LIMIT_CREDIT, 0)   LIMIT_CREDIT_nc,--授信额度（年初）
+                    nvl(a3.LIMIT_CREDIT, 0)   LIMIT_CREDIT_sq--授信额度（上期）
+              from CHAIN_DEPT a, tb_crd_statis_uscale T
+                 left join(select *
+                           from tb_crd_statis_uscale a
+                           where a.DATA_TYPE = '2'
+                             and a.YEAR  = FNC_GET_HS_DATE('1','Y')
+                            and a.MONTH = FNC_GET_HS_DATE('1','M')) a1
+                          on t.ORG_NUM = t.ORG_NUM and t.unit_scale = a1.unit_scale
+                 left join(select *
+                           from tb_crd_statis_uscale a
+                           where a.DATA_TYPE = '2'
+                             and a.YEAR  = FNC_GET_HS_DATE('2','Y')
+                            and a.MONTH = FNC_GET_HS_DATE('2','M')) a2
+                          on t.ORG_NUM = t.ORG_NUM and t.unit_scale = a2.unit_scale
+                 left join(select *
+                           from tb_crd_statis_uscale a
+                           where a.DATA_TYPE = '2'
+                             and a.YEAR  = FNC_GET_HS_DATE('3','Y')
+                            and a.MONTH = FNC_GET_HS_DATE('3','M')) a3
+                          on t.ORG_NUM = t.ORG_NUM and t.unit_scale = a3.unit_scale
+        where t.DATA_TYPE = '2'
+        and a.ID = t.ORG_NUM
+        and a.ANCESTORS  like CONCAT(CONCAT('%',#{orgNum}),'%'))s
+        group by s.unit_scale
+         order by sum(s.LIMIT_CREDIT) desc
+    </select>
+
+    <!--    机构额度视图-业务品种-->
+    <select id="listStatisProduct" parameterType="java.lang.String"
+            resultType="org.git.modules.clm.chart.vo.CrdStatisVO">
+            select s.product_num,--维度
+            FNC_GET_DICT_TRANS(s.product_num,'product') key_name,
+           sum(s.APPROVE_EXP_AMOUNT)                                                 APPROVE_EXP_AMOUNT,--批复敞口金额（本期）
+           sum(s.APPROVE_EXP_AMOUNT_tq)                                              APPROVE_EXP_AMOUNT_tq,--批复敞口金额（同期）
+           sum(s.APPROVE_EXP_AMOUNT_nc)                                              APPROVE_EXP_AMOUNT_nc,--批复敞口金额（年初）
+           sum(s.APPROVE_EXP_AMOUNT_sq)                                              APPROVE_EXP_AMOUNT_sq,--批复敞口金额（上期）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_tq)) APPROVE_EXP_AMOUNT_tqup,--批复敞口金额（同期增幅）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_nc)) APPROVE_EXP_AMOUNT_ncup,--批复敞口金额（年初增幅）
+           FNC_GET_DIVISION(sum(s.APPROVE_EXP_AMOUNT), sum(s.APPROVE_EXP_AMOUNT_sq)) APPROVE_EXP_AMOUNT_squp,--批复敞口金额（上期增幅）
+
+           sum(s.CREDIT_EXP_BALANCE)                                                 CREDIT_EXP_BALANCE,--授信敞口余额
+           sum(s.CREDIT_EXP_BALANCE_tq)                                              CREDIT_EXP_BALANCE_tq,--授信敞口余额（同期）
+           sum(s.CREDIT_EXP_BALANCE_nc)                                              CREDIT_EXP_BALANCE_nc,--授信敞口余额（年初）
+           sum(s.CREDIT_EXP_BALANCE_sq)                                              CREDIT_EXP_BALANCE_sq,--授信敞口余额（上期）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_tq)) LOAN_EXP_BALANCE_tqup,--贷款敞口余额（同期增幅）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_nc)) LOAN_EXP_BALANCE_ncup,--贷款敞口余额（年初增幅）
+           FNC_GET_DIVISION(sum(s.LOAN_EXP_BALANCE), sum(s.LOAN_EXP_BALANCE_sq)) LOAN_EXP_BALANCE_squp,--贷款敞口余额（上期增幅）
+
+           sum(s.LIMIT_CREDIT)                                                   LIMIT_CREDIT,--授信额度（本期）
+           sum(s.LIMIT_CREDIT_tq)                                                LIMIT_CREDIT_tq,--授信额度（同期）
+           sum(s.LIMIT_CREDIT_nc)                                                LIMIT_CREDIT_nc,--授信额度（年初）
+           sum(s.LIMIT_CREDIT_sq)                                                LIMIT_CREDIT_sq,--授信额度（上期）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_tq)) LIMIT_CREDIT_tqup,--授信额度（同期增幅）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_nc)) LIMIT_CREDIT_ncup,--授信额度（年初增幅）
+           FNC_GET_DIVISION(sum(s.LIMIT_CREDIT), sum(s.LIMIT_CREDIT_sq)) LIMIT_CREDIT_squp--授信额度（上期增幅）
+    from (
+             select t.product_num,--维度
+                    nvl(t.APPROVE_EXP_AMOUNT, 0)  APPROVE_EXP_AMOUNT,--批复敞口金额（本期）
+                    nvl(a1.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_tq,--批复敞口金额（同期）
+                    nvl(a2.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_nc,--批复敞口金额（年初）
+                    nvl(a3.APPROVE_EXP_AMOUNT, 0) APPROVE_EXP_AMOUNT_sq,--批复敞口金额（上期）
+                    nvl(t.CREDIT_EXP_BALANCE, 0)  CREDIT_EXP_BALANCE,--授信敞口余额
+                    nvl(a1.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_tq,--授信敞口余额（同期）
+                    nvl(a2.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_nc,--授信敞口余额（年初）
+                    nvl(a3.CREDIT_EXP_BALANCE, 0) CREDIT_EXP_BALANCE_sq,--授信敞口余额（上期）
+                    nvl(t.LOAN_EXP_BALANCE, 0)    LOAN_EXP_BALANCE,--贷款敞口余额（本期）
+                    nvl(a1.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_tq,--贷款敞口余额（同期）
+                    nvl(a2.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_nc,--贷款敞口余额（年初）
+                    nvl(a3.LOAN_EXP_BALANCE, 0)   LOAN_EXP_BALANCE_sq,--贷款敞口余额（上期）
+                    nvl(t.LIMIT_CREDIT, 0)    LIMIT_CREDIT,--授信额度（本期）
+                    nvl(a1.LIMIT_CREDIT, 0)   LIMIT_CREDIT_tq,--授信额度（同期）
+                    nvl(a2.LIMIT_CREDIT, 0)   LIMIT_CREDIT_nc,--授信额度（年初）
+                    nvl(a3.LIMIT_CREDIT, 0)   LIMIT_CREDIT_sq--授信额度（上期）
+                   from CHAIN_DEPT a, tb_crd_statis_product T
+                 left join(select *
+                           from tb_crd_statis_product a
+                           where a.DATA_TYPE = '2'
+                             and a.YEAR  = FNC_GET_HS_DATE('1','Y')
+                            and a.MONTH = FNC_GET_HS_DATE('1','M')) a1
+                          on t.ORG_NUM = t.ORG_NUM and t.product_num = a1.product_num
+                 left join(select *
+                           from tb_crd_statis_product a
+                           where a.DATA_TYPE = '2'
+                             and a.YEAR  = FNC_GET_HS_DATE('2','Y')
+                            and a.MONTH = FNC_GET_HS_DATE('2','M')) a2
+                          on t.ORG_NUM = t.ORG_NUM and t.product_num = a2.product_num
+                 left join(select *
+                           from tb_crd_statis_product a
+                           where a.DATA_TYPE = '2'
+                             and a.YEAR  = FNC_GET_HS_DATE('3','Y')
+                            and a.MONTH = FNC_GET_HS_DATE('3','M')) a3
+                          on t.ORG_NUM = t.ORG_NUM and t.product_num = a3.product_num
+        where t.DATA_TYPE = '2'
+        and a.ID = t.ORG_NUM
+        and a.ANCESTORS  like CONCAT(CONCAT('%',#{orgNum}),'%'))s
+        group by s.product_num
+         order by sum(s.LIMIT_CREDIT) desc
+    </select>
+
+</mapper>

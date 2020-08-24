@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.loan.mapper.CsmGroupMemberMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="csmGroupMemberResultMap" type="org.git.modules.clm.loan.entity.CsmGroupMember">
+        <id column="ID" property="id"/>
+        <result column="ID" property="id"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="MEMBER_CUSTOMER_NUM" property="memberCustomerNum"/>
+        <result column="STATUS" property="status"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="MEMBER_REL_TYPE" property="memberRelType"/>
+    </resultMap>
+
+
+    <select id="selectCsmGroupMemberPage" resultMap="csmGroupMemberResultMap">
+        select * from TB_CSM_GROUP_MEMBER where is_deleted = 0
+    </select>
+
+    <select id="listCsmGroupMemberPage" parameterType="org.git.modules.clm.loan.vo.CsmGroupMemberVO"
+            resultType="org.git.modules.clm.loan.vo.CsmGroupMemberVO">
+        select
+            gm.MEMBER_CUSTOMER_NUM,                     -- 集团客户
+            cp.customer_name,                           -- 集团名称
+            s.org_num,
+            sum(s.limit_credit) as limitCreditTotal,
+            sum(s.limit_used) as limitUsedTotal,
+            sum(s.limit_avi) as limitAviTotal,
+            sum(s.exp_credit) as expCreditTotal,
+            sum(s.exp_used) as expUsedTotal,
+            sum(s.exp_avi) as ExpAviTotal
+        from
+            tb_crd_sum s,
+            TB_CSM_PARTY cp,
+            TB_CSM_GROUP_MEMBER gm,
+            CHAIN_DEPT cd
+        where    s.CUSTOMER_NUM =cp.CUSTOMER_NUM
+        and     cp.customer_num=gm.customer_num
+        and     s.ORG_NUM=cd.ID
+        and     cd.ANCESTORS like  CONCAT(CONCAT('%',#{orgNum}),'%')
+        <if test="csmGroupMemberVO.customerName!=null and csmGroupMemberVO.customerName!=''">
+            and cp.customer_name like CONCAT(CONCAT('%',#{csmGroupMemberVO.customerName}),'%')
+        </if>
+
+        <if test="csmGroupMemberVO.customerNum!=null and csmGroupMemberVO.customerNum!=''">
+            and cp.customer_num =#{csmGroupMemberVO.customerNum}
+        </if>
+        group by gm.MEMBER_CUSTOMER_NUM,cp.customer_name,s.org_num
+    </select>
+
+    <select id="findCsmGroupMemberPage" resultType="org.git.modules.clm.loan.vo.CsmGroupMemberVO">
+        select
+            t2.org_num ,                    -- 主办机构
+            t3.customer_name as member_customer_name,               -- 集团成员客户名称
+            t3.customer_name as company_customer_name, -- 集团客户名称
+            t5.cert_type,                   -- 证件类型
+            t5.cert_num,                    -- 证件号码
+            t1.member_customer_num ,        -- 集团客户编号
+            t2.currency_cd ,                -- 币种
+            t2.limit_credit ,               -- 授信额度
+            t2.limit_used ,                 -- 已用额度
+            t2.limit_avi ,                  -- 可用额度
+            t2.exp_credit ,                 -- 授信敞口
+            t2.exp_used ,                   -- 已用敞口
+            t2.exp_avi                     -- 可用敞口
+        from
+            tb_csm_group_member t1,
+            tb_crd_sum t2,
+            tb_csm_party t3,
+            tb_csm_cert_info t5,
+            tb_csm_group_company t6,
+            CHAIN_DEPT cd
+        where
+            t1.member_customer_num=t2.customer_num
+        and
+            t1.customer_num=t3.customer_num
+        and
+            t1.customer_num=t5.customer_num
+        and t6.CUSTOMER_NUM = t3.customer_num
+        and t2.org_num=cd.ID
+        and cd.ANCESTORS like  CONCAT(CONCAT('%',#{orgNum}),'%')
+        <if test="csmGroupMemberVO.memberCustomerNum!=null and csmGroupMemberVO.memberCustomerNum!=''">
+            and t1.member_customer_num=#{csmGroupMemberVO.memberCustomerNum}
+        </if>
+    </select>
+</mapper>

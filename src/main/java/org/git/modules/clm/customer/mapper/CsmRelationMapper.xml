@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.customer.mapper.CsmRelationMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="csmRelationResultMap" type="org.git.modules.clm.customer.entity.CsmRelation">
+        <id column="REL_ID" property="relId"/>
+        <result column="REL_ID" property="relId"/>
+        <result column="REL_ID" property="relId"/>
+        <result column="REL_ID" property="relId"/>
+        <result column="REL_MARK" property="relMark"/>
+        <result column="SETTLE_BANK_NUM" property="settleBankNum"/>
+        <result column="SUP_SETTLE_BANK_NUM" property="supSettleBankNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="REL_CUSTOMER_NUM" property="relCustomerNum"/>
+        <result column="REL_TYPE" property="relType"/>
+        <result column="CUST_NAME" property="custName"/>
+        <result column="CERT_TYPE" property="certType"/>
+        <result column="CERT_NUM" property="certNum"/>
+        <result column="GENDER" property="gender"/>
+        <result column="UNIT_SCALE" property="unitScale"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectCsmRelationPage" resultType="org.git.modules.clm.customer.vo.CsmRelationVO">
+        select * from TB_CSM_RELATION
+        <if test="csmRelation.customerNum!=null and csmRelation.customerNum!=''">
+            where CUSTOMER_NUM = #{csmRelation.customerNum}
+        </if>
+    </select>
+
+</mapper>

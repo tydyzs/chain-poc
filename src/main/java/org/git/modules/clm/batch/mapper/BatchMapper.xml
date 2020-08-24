@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.batch.mapper.BatchMapper">
+
+
+    <select id="listCustomerCredit" resultType="java.lang.String">
+            select distinct a.CUSTOMER_NUM from TB_CRD_APPROVE A
+    </select>
+
+    <select id="listCustomerGrt" resultType="java.lang.String">
+            select distinct a.CUSTOMER_NUM from TB_CRD_SURETY A
+    </select>
+
+    <select id="listCustomerThird" resultType="java.lang.String">
+            select distinct a.CUSTOMER_NUM from TB_CRD_PROJECT A
+    </select>
+
+
+    <select id="listCreditStatis" resultType="java.lang.String">
+            select  a.CUSTOMER_NUM from TB_CRD_APPROVE A
+             union
+            select  a.CUSTOMER_NUM from TB_CRD_APPROVE A
+              union
+            select  a.CUSTOMER_NUM from TB_CRD_PROJECT A
+    </select>
+
+    <!--    信用卡额度处理-->
+    <update id="ccStatis" statementType="CALLABLE">
+        {call prc_cc_statis()}
+    </update>
+
+
+</mapper>

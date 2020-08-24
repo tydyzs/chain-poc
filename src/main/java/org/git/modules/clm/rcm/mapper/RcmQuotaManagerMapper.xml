@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmQuotaManagerMapper">
+
+
+    <select id="selectRcmConfigurationManagerPage" resultType="org.git.modules.clm.rcm.vo.RcmQuotaManagerVO">
+        select ci.quota_num,
+            ci.quota_name,
+            ci.quota_index_num,
+            ci.use_org_num,
+            ci.quota_used_amt,
+            ci.quota_free_amt,
+            ci.quota_used_ratio,
+            ci.quota_free_ratio,
+            ci.quota_total_sum,
+            ci.quota_total_type,
+            ci.start_date,
+            ci.invalid_date,
+            ci.quota_state,
+            ci.his_frequency_a,
+            ci.his_frequency_b,
+            ci.his_frequency_c,
+            ci.his_frequency,
+            ci.explain_info,
+            ci.user_num,
+            ci.org_num,
+            ci.create_time,
+            ci.update_time,
+            ci.inspect_user_num,
+            ci.inspect_org_num,
+            ci.inspect_time,
+            ci.apply_state,
+            cp.OBSERVE_VALUE,
+            cp.WARN_VALUE,
+            cp.CONTROL_VALUE,
+            cp.OBSERVE_VALUE_TYPE,
+            cp.WARN_VALUE_TYPE,
+            cp.CONTROL_VALUE_TYPE,
+            cb.quota_index_type,
+            cb.quota_type,
+            cb.quota_index_name
+        from TB_RCM_CONFIG ci
+        left join tb_rcm_index cb on ci.quota_index_num = cb.quota_index_num
+        left join (select b.QUOTA_NUM,--集中度限额编号
+                            COALESCE(b.QUOTA_CONTROL_AMT3, b.QUOTA_CONTROL_RATIO3) AS OBSERVE_VALUE,--3观察
+                            decode(QUOTA_CONTROL_AMT3, null, '2', '1')             AS OBSERVE_VALUE_TYPE,--阈值类型 1.金额 2.百分比
+                            b.NODE_MEASURE3                                        AS OBSERVE_NODE_MEASURE,--应对措施
+                            COALESCE(b.QUOTA_CONTROL_AMT2, b.QUOTA_CONTROL_RATIO2) AS WARN_VALUE,--2预警
+                            decode(QUOTA_CONTROL_AMT2, null, '2', '1')             AS WARN_VALUE_TYPE,--阈值类型 1.金额 2.百分比
+                            b.NODE_MEASURE2                                        AS WARN_NODE_MEASURE,--应对措施
+                            COALESCE(b.QUOTA_CONTROL_AMT1, b.QUOTA_CONTROL_RATIO1) AS CONTROL_VALUE,--1控制
+                            decode(QUOTA_CONTROL_AMT1, null, '2', '1')             AS CONTROL_VALUE_TYPE,--阈值类型 1.金额 2.百分比
+                            b.NODE_MEASURE1                                        AS CONTROL_NODE_MEASURE--应对措施
+                    from (select b.QUOTA_NUM,
+                                max(case when b.QUOTA_LEVEL = '1' then b.QUOTA_CONTROL_RATIO end) QUOTA_CONTROL_RATIO1,
+                                max(case when b.QUOTA_LEVEL = '2' then b.QUOTA_CONTROL_RATIO end) QUOTA_CONTROL_RATIO2,
+                                max(case when b.QUOTA_LEVEL = '3' then b.QUOTA_CONTROL_RATIO end) QUOTA_CONTROL_RATIO3,
+                                max(case when b.QUOTA_LEVEL = '1' then b.QUOTA_CONTROL_AMT end)   QUOTA_CONTROL_AMT1,
+                                max(case when b.QUOTA_LEVEL = '2' then b.QUOTA_CONTROL_AMT end)   QUOTA_CONTROL_AMT2,
+                                max(case when b.QUOTA_LEVEL = '3' then b.QUOTA_CONTROL_AMT end)   QUOTA_CONTROL_AMT3,
+                                max(case when b.QUOTA_LEVEL = '1' then b.NODE_MEASURE end)        NODE_MEASURE1,
+                                max(case when b.QUOTA_LEVEL = '2' then b.NODE_MEASURE end)        NODE_MEASURE2,
+                                max(case when b.QUOTA_LEVEL = '3' then b.NODE_MEASURE end)        NODE_MEASURE3
+                            from TB_RCM_CONFIG_PARA b
+                            group by b.QUOTA_NUM) b) cp
+              on ci.quota_num = cp.quota_num
+        where 1=1
+        <if test="rcmConfigurationManager.quotaName!=null">
+            and ci.quota_name like concat(concat('%', #{rcmConfigurationManager.quotaName}), '%')
+        </if>
+        <if test="rcmConfigurationManager.quotaState!=null">
+            and ci.quota_state = #{rcmConfigurationManager.quotaState}
+        </if>
+        <if test="rcmConfigurationManager.quotaIndexName!=null">
+            and cb.quota_index_name like concat(concat('%', #{rcmConfigurationManager.quotaIndexName}), '%')
+        </if>
+        <if test="rcmConfigurationManager.useOrgNum!=null">
+            and ci.use_org_num = #{rcmConfigurationManager.useOrgNum}
+        </if>
+        <if test="rcmConfigurationManager.quotaType!=null">
+            and cb.quota_type = #{rcmConfigurationManager.quotaType}
+        </if>
+        <if test="rcmConfigurationManager.quotaIndexType!=null">
+            and cb.quota_index_type = #{rcmConfigurationManager.quotaIndexType}
+        </if>
+    </select>
+
+</mapper>

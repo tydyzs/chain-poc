@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.chart.mapper.GroupChartMapper">
+
+    <!--额度视图 集团客户360视图 集团组织结构-->
+    <select id="queryGroupMemberList" resultType="org.git.modules.clm.chart.vo.CrdGroupVO">
+        select
+            a.member_customer_num,
+            cp.customer_name, -- 集团客户名称
+            d.super_crd_name,       -- 额度大类,
+            d.crd_product_name,     -- 额度产品 ,
+            b.*
+        from
+             tb_csm_group_member as a,
+             tb_crd_detail as b,
+             tb_crd_main as c,
+             tb_par_crd as d,
+             tb_csm_party as cp,
+             chain_dept as e
+        where  a.member_customer_num=b.customer_num
+        and    b.crd_main_num=c.crd_main_num
+        and    b.crd_detail_prd=d.crd_product_num
+        and    c.crd_main_prd=d.super_crd_num
+        and    a.CUSTOMER_NUM=cp.CUSTOMER_NUM
+        and    b.org_num=e.ID
+        and   e.ANCESTORS like CONCAT(CONCAT('%', #{orgNum}), '%')
+        and   a.MEMBER_CUSTOMER_NUM=#{memberCustomerNum}
+    </select>
+
+    <!--集团客户360视图  集团组织结构(面包屑)-->
+    <select id="queryGroupMemberByCsNum" resultType="org.git.modules.clm.chart.vo.CrdGroupTreeVO">
+            SELECT
+                CUSTOMER_NUM AS ID,
+                NULL AS PARENT_ID,
+                CUSTOMER_NUM AS VALUE,
+                CUSTOMER_NUM AS KEY,
+                CUSTOMER_NAME AS TITLE
+            FROM
+                TB_CSM_PARTY
+            WHERE
+                CUSTOMER_NUM=#{customerNum}
+            UNION
+            SELECT
+                M.MEMBER_CUSTOMER_NUM AS ID,
+                M.CUSTOMER_NUM AS PARENT_ID,
+                M.MEMBER_CUSTOMER_NUM AS VALUE,
+                M.MEMBER_CUSTOMER_NUM AS KEY,
+                cp.customer_name AS member_customer_name
+            FROM
+                TB_CSM_GROUP_MEMBER M,
+                TB_CSM_PARTY cp
+            WHERE
+                M.CUSTOMER_NUM=cp.CUSTOMER_NUM
+            and  m.CUSTOMER_NUM=#{customerNum}
+            UNION
+            SELECT
+                R.REL_CUSTOMER_NUM AS ID,
+                R.CUSTOMER_NUM AS PARENT_ID,
+                R.REL_CUSTOMER_NUM AS VALUE,
+                R.REL_CUSTOMER_NUM AS KEY,
+                cust_name AS cust_name
+            FROM
+                TB_CSM_RELATION R
+            WHERE
+                R.CUSTOMER_NUM IN (SELECT MEMBER_CUSTOMER_NUM  FROM TB_CSM_GROUP_MEMBER WHERE CUSTOMER_NUM=#{customerNum})
+    </select>
+</mapper>

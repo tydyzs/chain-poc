@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.FundAdmitDetailMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="fundAdmitDetailResultMap" type="org.git.modules.clm.credit.entity.FundAdmitDetail">
+        <id column="EVENT_DETAIL_ID" property="eventDetailId"/>
+        <result column="EVENT_DETAIL_ID" property="eventDetailId"/>
+        <result column="EVENT_MAIN_ID" property="eventMainId"/>
+        <result column="EVENT_MAIN_ID" property="eventMainId"/>
+        <result column="EVENT_MAIN_ID" property="eventMainId"/>
+        <result column="EVENT_MAIN_ID" property="eventMainId"/>
+        <result column="EVENT_MAIN_ID" property="eventMainId"/>
+        <result column="EVENT_MAIN_ID" property="eventMainId"/>
+        <result column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="TRAN_DATE" property="tranDate"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CRD_STATUS" property="crdStatus"/>
+        <result column="CRD_DETAIL_PRD" property="crdDetailPrd"/>
+        <result column="CRD_ADMIT_FLAG" property="crdAdmitFlag"/>
+        <result column="FROZEN_REQ_DATE" property="frozenReqDate"/>
+        <result column="FROZEN_BEGIN_DATE" property="frozenBeginDate"/>
+        <result column="FROZEN_END_DATE" property="frozenEndDate"/>
+    </resultMap>
+
+
+    <select id="selectFundAdmitDetailPage" resultMap="fundAdmitDetailResultMap">
+        select * from TB_FUND_ADMIT_DETAIL where is_deleted = 0
+    </select>
+
+</mapper>

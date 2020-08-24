@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.system.mapper.LoginLogMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="userRoleResultMap" type="org.git.modules.system.entity.LoginLog">
+        <result column="id" property="id"/>
+        <result column="account" property="account"/>
+        <result column="user_name" property="userName"/>
+        <result column="org_name" property="orgName"/>
+        <result column="login_datetime" property="login_datetime"/>
+        <result column="login_client_ip" property="loginClientIp"/>
+        <result column="logout_datetime" property="logoutDatetime"/>
+        <result column="online_status" property="onlineStatus"/>
+    </resultMap>
+</mapper>

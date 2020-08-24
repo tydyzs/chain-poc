@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.TbCrdContractEventMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="tbCrdContractEventResultMap" type="org.git.modules.clm.credit.entity.TbCrdContractEvent">
+        <id column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="OP_TYPE" property="opType"/>
+        <result column="CONTRACT_NUM" property="contractNum"/>
+        <result column="APPROVE_ID" property="approveId"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="PARTY_ID" property="partyId"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="PRODUCT_NUM" property="productNum"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="EXCHANGE_RATE" property="exchangeRate"/>
+        <result column="CONTRACT_AMT" property="contractAmt"/>
+        <result column="CONTRACT_USED" property="contractUsed"/>
+        <result column="CONTRACT_AVI" property="contractAvi"/>
+        <result column="CONTRACT_BAL" property="contractBal"/>
+        <result column="LOAN_TERM" property="loanTerm"/>
+        <result column="LOAN_TERM_UNIT" property="loanTermUnit"/>
+        <result column="BEGIN_DATE" property="beginDate"/>
+        <result column="END_DATE" property="endDate"/>
+        <result column="DEPOSIT_RATIO" property="depositRatio"/>
+        <result column="INDUSTRY" property="industry"/>
+        <result column="GUARANTEE_TYPE" property="guaranteeType"/>
+        <result column="MAIN_GUARANTEE_TYPE" property="mainGuaranteeType"/>
+        <result column="CLASSIFY_RESULT" property="classifyResult"/>
+        <result column="CLOSE_DATE" property="closeDate"/>
+        <result column="CONTRACT_STATUS" property="contractStatus"/>
+        <result column="TRAN_DATE" property="tranDate"/>
+        <result column="TRAN_SYSTEM" property="tranSystem"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectTbCrdContractEventPage" resultMap="tbCrdContractEventResultMap">
+        select * from TB_CRD_CONTRACT_EVENT where is_deleted = 0
+    </select>
+
+</mapper>

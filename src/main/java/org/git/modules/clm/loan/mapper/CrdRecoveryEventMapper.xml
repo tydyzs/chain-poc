@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.loan.mapper.CrdRecoveryEventMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="crdRecoveryEventResultMap" type="org.git.modules.clm.loan.entity.CrdRecoveryEvent">
+        <id column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="SUMMARY_NUM" property="summaryNum"/>
+        <result column="CONTRACT_NUM" property="contractNum"/>
+        <result column="CRD_DETAIL_PRD" property="crdDetailPrd"/>
+        <result column="TRAN_TYPE" property="tranType"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="REPAY_AMT" property="repayAmt"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectCrdRecoveryEventPage" resultMap="crdRecoveryEventResultMap">
+        select * from TB_CRD_RECOVERY_EVENT where is_deleted = 0
+    </select>
+
+</mapper>

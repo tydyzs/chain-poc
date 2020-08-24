@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.CrdSumMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="crdSumResultMap" type="org.git.modules.clm.credit.entity.CrdSum">
+        <id column="STATIS_ID" property="statisId"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CRD_PRODUCT_TYPE" property="crdProductType"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="LIMIT_CREDIT" property="limitCredit"/>
+        <result column="LIMIT_USED" property="limitUsed"/>
+        <result column="LIMIT_AVI" property="limitAvi"/>
+        <result column="EXP_CREDIT" property="expCredit"/>
+        <result column="EXP_USED" property="expUsed"/>
+        <result column="EXP_AVI" property="expAvi"/>
+        <result column="LIMIT_PRE" property="limitPre"/>
+        <result column="EXP_PRE" property="expPre"/>
+        <result column="LIMIT_FROZEN" property="limitFrozen"/>
+        <result column="OPEN_FROZEN" property="openFrozen"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectCrdSumPage" resultMap="crdSumResultMap">
+        select * from TB_CRD_SUM where is_deleted = 0
+    </select>
+
+    <select id="queryCrdSum" parameterType="org.git.modules.clm.credit.vo.CrdSumVO" resultType="org.git.modules.clm.credit.vo.CrdSumVO">
+       select t.CUSTOMER_NUM,
+               sum(LIMIT_CREDIT) LIMIT_CREDIT,
+               sum(LIMIT_USED)   LIMIT_USED,
+               sum(LIMIT_AVI)    LIMIT_AVI,
+               sum(EXP_CREDIT)   EXP_CREDIT,
+               sum(EXP_USED)     EXP_USED,
+               sum(EXP_AVI)      EXP_AVI,
+               sum(LIMIT_PRE)    LIMIT_PRE,
+               sum(EXP_PRE)      EXP_PRE,
+               sum(LIMIT_FROZEN) LIMIT_FROZEN,
+               sum(EXP_FROZEN)  OPEN_FROZEN
+        from TB_CRD_SUM t
+        where CUSTOMER_NUM = #{customerNum}
+        <if test="orgNum!=null and orgNum!=''">
+            and ORG_NUM = #{orgNum}
+        </if>
+        <if test="crdProductType != null">
+            and crd_product_type = #{crdProductType}
+        </if>
+        group by t.CUSTOMER_NUM
+    </select>
+
+    <sql id="selectCrdSumByCustomer">
+       select
+             s.org_num,
+             s.currency_cd,
+             s.customer_num,
+             s.crd_product_type,
+             sum(limit_credit) as limit_credit,
+             sum(limit_used) as limit_used,
+             sum(limit_avi) as limit_avi,
+             sum(exp_credit) as exp_credit,
+             sum(exp_used) as exp_used,
+             sum(exp_avi) as exp_avi,
+             sum(limit_pre) as limit_pre,
+             sum(exp_pre) as exp_pre,
+             sum(limit_frozen) as limit_frozen
+        from
+            tb_crd_sum s
+        group by customer_num,crd_product_type,currency_cd,s.org_num
+    </sql>
+
+    <sql id="findCrdSum">
+        select
+            customer_num,                -- 客户编号
+            crd_product_type,            -- 额度类型
+            currency_cd ,                -- 币种
+            currency_cd ,                -- 币种
+            limit_credit ,               -- 授信额度
+            limit_used ,                 -- 已用额度
+            limit_avi ,                  -- 可用额度
+            exp_credit ,                 -- 授信敞口
+            exp_used ,                   -- 已用敞口
+            exp_avi ,                    -- 可用敞口
+            limit_pre,                   -- 预占用额度
+            exp_pre,                     -- 预占用敞口
+            limit_frozen                -- 冻结额度
+        from
+            TB_CRD_SUM
+    </sql>
+
+    <!--第三方额度台账-->
+    <select id="findThirdPartyCrdSumPage" parameterType="org.git.modules.clm.credit.vo.CrdSumVO" resultType="org.git.modules.clm.credit.vo.CrdSumVO">
+        select
+            d.org_num,			-- 经办机构
+            d.ORG_NUM ORG_NUM_ANOTHER,
+            d.crd_product_type,
+            cp.customer_name,	-- 客户名称
+            d.currency_cd,      -- 币种
+            d.customer_num,		-- 客户编号
+            ci.cert_type,		-- 证件类型
+            ci.cert_num,		-- 证件号码
+            d.limit_credit,		-- 授信额度
+            d.limit_used,		-- 已用额度
+            d.limit_avi,		-- 可用额度
+            d.exp_credit,		-- 授信敞口
+            d.exp_used,			-- 已用敞口
+            d.exp_avi 			-- 可用敞口
+        from
+            tb_csm_party cp,
+            tb_csm_cert_info ci,
+             (<include refid="selectCrdSumByCustomer"/>) d,
+             CHAIN_DEPT cd
+        where   cp.customer_num=ci.customer_num
+        and    cp.customer_num=d.customer_num
+        and    d.ORG_NUM = cd.ID
+        and    ci.CERT_FLAG='01'
+        and    d.crd_product_type='3'
+        <if test="crdSumVO.certType!=null and crdSumVO.certType!=''">
+            and ci.cert_type =#{crdSumVO.certType}
+        </if>
+        <if test="crdSumVO.certNum!=null and crdSumVO.certNum!=''">
+            and ci.cert_num =#{crdSumVO.certNum}
+        </if>
+        <if test="crdSumVO.customerName!=null and crdSumVO.customerName!=''">
+            and cp.CUSTOMER_NAME like CONCAT(CONCAT('%',#{crdSumVO.customerName}),'%')
+        </if>
+        <if test="crdSumVO.customerNum!=null and crdSumVO.customerNum!=''">
+            and cp.CUSTOMER_NUM =#{crdSumVO.customerNum}
+        </if>
+        <if test="crdSumVO.orgNum!=null  and crdSumVO.orgNum!=''">
+            and cd.ANCESTORS like CONCAT(CONCAT('%',#{crdSumVO.orgNum}),'%')
+        </if>
+    </select>
+
+
+
+
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmIndexFullMapper">
+
+    <select id="selectRcmIndexFullDetail" resultType="org.git.modules.clm.rcm.vo.RcmIndexFullVO" parameterType="string">
+        select base.*, bc.*
+        from tb_rcm_index base
+                 left join
+             (select quota_index_num,
+                     null business_type,
+                     range_region,
+                     null buss_scene,
+                     range_customer,
+                     currency,
+                     range_country,
+                     range_industry,
+                     range_product,
+                     range_term,
+                     ranger_risk_mitigation,
+                     create_time,
+                     update_time
+              from tb_rcm_index_credit c
+              where c.quota_index_num = #{quotaIndexNum}
+              union all
+              select
+                  quota_index_num,
+                  business_type,
+                  null range_region,
+                  buss_scene,
+                  range_customer,
+                  currency,
+                  range_country,
+                  null range_industry,
+                  range_product,
+                  null range_term,
+                  null ranger_risk_mitigation,
+                  create_time,
+                  update_time
+              from tb_rcm_index_bank b
+              where b.quota_index_num = #{quotaIndexNum}) bc
+             on bc.quota_index_num = base.quota_index_num
+        where base.quota_index_num = #{quotaIndexNum}
+    </select>
+
+    <select id="selectRcmIndexFullPage" resultType="org.git.modules.clm.rcm.vo.RcmIndexFullVO">
+
+
+    </select>
+
+</mapper>

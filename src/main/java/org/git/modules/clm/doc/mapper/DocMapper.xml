@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.doc.mapper.DocMapper">
+
+    <resultMap id="DocResultMap" type="org.git.modules.clm.doc.entity.Doc">
+        <result column="id" property="id"/>
+        <result column="doc_name" property="docName"/>
+        <result column="doc_root_name" property="docRootName"/>
+        <result column="doc_type_name" property="docTypeName"/>
+        <result column="doc_type_code" property="docTypeCode"/>
+        <result column="doc_suffix" property="docSuffix"/>
+        <result column="doc_bz" property="docBz"/>
+        <result column="user_num" property="userNum"/>
+        <result column="org_num" property="orgNum"/>
+        <result column="create_time" property="createTime"/>
+        <result column="is_release" property="isRelease"/>
+        <result column="is_delete" property="isDelete"/>
+    </resultMap>
+    <resultMap id="DocResultMapVO" type="org.git.modules.clm.doc.vo.DocVO">
+        <result column="id" property="id"/>
+        <result column="doc_name" property="docName"/>
+        <result column="doc_root_name" property="docRootName"/>
+        <result column="doc_type_name" property="docTypeName"/>
+        <result column="doc_type_code" property="docTypeCode"/>
+        <result column="doc_bz" property="docBz"/>
+        <result column="user_num" property="userNum"/>
+        <result column="org_num" property="orgNum"/>
+        <result column="createUserName" property="createUserName"/>
+        <result column="createDeptName" property="createDeptName"/>
+        <result column="create_time" property="createTime"/>
+        <result column="is_release" property="isRelease"/>
+        <result column="is_delete" property="isDelete"/>
+        <result column="is_me" property="isMe"/>
+    </resultMap>
+    <select id="selectDocPage" resultMap="DocResultMapVO">
+        select t1.* ,
+        to_char(t1.create_time,'yyyy-MM-dd') as createDate,
+        (case t1.user_num when #{docvo.userNum} then '' else 'disabled' End) as is_me,
+        t2.name as createUserName,t3.dept_name as createDeptName
+        from tb_doc_release t1,chain_user t2,chain_dept t3
+        where t1.user_num=t2.id and t1.org_num=t3.id
+        and t1.is_delete='0'
+        --当前用户上传 或者 当前机构/上级机构/上上级机构上传且已发布的
+        and
+        (
+        t1.user_num=#{docvo.userNum}
+        or
+        (
+        t1.IS_RELEASE='1'
+        and t1.ORG_NUM in (  select id from chain_dept where id=#{docvo.orgNum} union all
+        select parent_id from chain_dept where id=#{docvo.orgNum} or
+        id=(select parent_id from chain_dept where id=#{docvo.orgNum})
+        )
+        )
+        )
+        <if test="docvo.docTypeCode!=null">
+            and t1.doc_type_code=#{docvo.docTypeCode}
+        </if>
+        <if test="docvo.docName!=null">
+            and t1.doc_name like CONCAT(CONCAT('%',#{docvo.docName}) ,'%')
+        </if>
+        order by t1.create_time desc
+    </select>
+</mapper>

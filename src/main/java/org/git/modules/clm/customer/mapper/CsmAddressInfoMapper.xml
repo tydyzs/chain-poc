@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.customer.mapper.CsmAddressInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="csmAddressInfoResultMap" type="org.git.modules.clm.customer.entity.CsmAddressInfo">
+        <id column="addr_id" property="addrId"/>
+        <result column="customer_num" property="customerNum"/>
+        <result column="customer_num" property="customerNum"/>
+        <result column="conn_type" property="connType"/>
+        <result column="coun_regi" property="counRegi"/>
+        <result column="province" property="province"/>
+        <result column="city" property="city"/>
+        <result column="county" property="county"/>
+        <result column="street" property="street"/>
+        <result column="detail_addr" property="detailAddr"/>
+        <result column="eng_addr" property="engAddr"/>
+        <result column="post_code" property="postCode"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectCsmAddressInfoPage" resultType="org.git.modules.clm.customer.vo.CsmAddressInfoVO">
+        select * from TB_CSM_ADDRESS_INFO
+        <if test="csmAddressInfo.customerNum!=null and csmAddressInfo.customerNum!=''">
+            where CUSTOMER_NUM = #{csmAddressInfo.customerNum}
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.TbCrdApproveEventMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="tbCrdApproveEventResultMap" type="org.git.modules.clm.credit.entity.TbCrdApproveEvent">
+        <id column="EVENT_ID" property="eventId"/>
+        <result column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="OP_TYPE" property="opType"/>
+        <result column="APPROVE_ID" property="approveId"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="APPROVE_NUM" property="approveNum"/>
+        <result column="CRD_MAIN_PRD" property="crdMainPrd"/>
+        <result column="CRD_MAIN_NUM" property="crdMainNum"/>
+        <result column="CRD_DETAIL_PRD" property="crdDetailPrd"/>
+        <result column="CRD_DETAIL_NUM" property="crdDetailNum"/>
+        <result column="IS_JOINT_GUANANTEE" property="isJointGuanantee"/>
+        <result column="BIZ_TYPE" property="bizType"/>
+        <result column="IS_LOW_RISK" property="isLowRisk"/>
+        <result column="LOW_RISK_TYPE" property="lowRiskType"/>
+        <result column="BIZ_HAPPEN_TYPE" property="bizHappenType"/>
+        <result column="PRODUCT_NUM" property="productNum"/>
+        <result column="PRODUCT_TYPE" property="productType"/>
+        <result column="TRAN_DATE" property="tranDate"/>
+        <result column="IS_CYCLE" property="isCycle"/>
+        <result column="INDUSTRY" property="industry"/>
+        <result column="GUARANTEE_TYPE" property="guaranteeType"/>
+        <result column="MAIN_GUARANTEE_TYPE" property="mainGuaranteeType"/>
+        <result column="PURPOSE" property="purpose"/>
+        <result column="TERM" property="term"/>
+        <result column="TERM_UNIT" property="termUnit"/>
+        <result column="APPROVE_STATUS" property="approveStatus"/>
+        <result column="TOTAL_AMT" property="totalAmt"/>
+        <result column="APPROVE_AMT" property="approveAmt"/>
+        <result column="APPROVE_USED" property="approveUsed"/>
+        <result column="APPROVE_AVI" property="approveAvi"/>
+        <result column="APPROVE_EXP_AMT" property="approveExpAmt"/>
+        <result column="APPROVE_EXP_USED" property="approveExpUsed"/>
+        <result column="APPROVE_EXP_AVI" property="approveExpAvi"/>
+        <result column="APPROVE_PRE_AMT" property="approvePreAmt"/>
+        <result column="APPROVE_PRE_EXP" property="approvePreExp"/>
+        <result column="BEGIN_DATE" property="beginDate"/>
+        <result column="END_DATE" property="endDate"/>
+        <result column="OLD_SUMMARY_NUM" property="oldSummaryNum"/>
+        <result column="PROJECT_NUM" property="projectNum"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="TRAN_SYSTEM" property="tranSystem"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="EXCHANGE_RATE" property="exchangeRate"/>
+        <result column="DEPOSIT_RATIO" property="depositRatio"/>
+    </resultMap>
+
+
+    <select id="selectTbCrdApproveEventPage" resultMap="tbCrdApproveEventResultMap">
+        select * from TB_CRD_APPROVE_EVENT where is_deleted = 0
+    </select>
+
+</mapper>

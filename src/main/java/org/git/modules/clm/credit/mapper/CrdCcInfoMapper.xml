@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.CrdCcInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="crdCcInfoResultMap" type="org.git.modules.clm.credit.entity.CrdCcInfo">
+        <id column="ID" property="id"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="ACCT_NUM" property="acctNum"/>
+        <result column="PRODUCT_NUM" property="productNum"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="CREDIT_LIMIT" property="creditLimit"/>
+        <result column="TEMP_LIMIT" property="tempLimit"/>
+        <result column="TEMP_LIMIT_BEGIN_DATE" property="tempLimitBeginDate"/>
+        <result column="TEMP_LIMIT_END_DATE" property="tempLimitEndDate"/>
+        <result column="CASH_LIMIT_RT" property="cashLimitRt"/>
+        <result column="OVRLMT_RATE" property="ovrlmtRate"/>
+        <result column="LOAN_LIMIT_RT" property="loanLimitRt"/>
+        <result column="CURR_BAL" property="currBal"/>
+        <result column="CASH_BAL" property="cashBal"/>
+        <result column="PRINCIPAL_BAL" property="principalBal"/>
+        <result column="LOAN_BAL" property="loanBal"/>
+        <result column="QUAL_GRACE_BAL" property="qualGraceBal"/>
+        <result column="ACTUAL_PAYMENT_AMT" property="actualPaymentAmt"/>
+        <result column="CHARGE_OFF_AMT" property="chargeOffAmt"/>
+        <result column="UNSTMT_BAL" property="unstmtBal"/>
+        <result column="CTD_REAIL_PRIN_BAL" property="ctdReailPrinBal"/>
+        <result column="STMT_REAIL_PRIN_BAL" property="stmtReailPrinBal"/>
+        <result column="CTD_CASH_PRIN_BAL" property="ctdCashPrinBal"/>
+        <result column="STMT_CASH_PRIN_BAL" property="stmtCashPrinBal"/>
+        <result column="CTD_LOAN_PRIN_BAL" property="ctdLoanPrinBal"/>
+        <result column="STMT_LOAN_PRIN_BAL" property="stmtLoanPrinBal"/>
+        <result column="LARGE_LOAN_BAL_XFROUT" property="largeLoanBalXfrout"/>
+        <result column="UNMATCH_DB_AMT" property="unmatchDbAmt"/>
+        <result column="UNMATCH_CR_AMT" property="unmatchCrAmt"/>
+        <result column="OVERLIMIT_AMT" property="overlimitAmt"/>
+        <result column="REMAIN_GRACE_BAL" property="remainGraceBal"/>
+        <result column="GRACE_DAYS_FULL_IND" property="graceDaysFullInd"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="BILLING_CYCLE" property="billingCycle"/>
+    </resultMap>
+
+
+    <select id="selectCrdCcInfoPage" resultMap="crdCcInfoResultMap">
+        select * from TB_CRD_CC_INFO where is_deleted = 0
+    </select>
+
+    <select id="selectCrdCcInfoAndCustomerNamePage" resultType="org.git.modules.clm.credit.vo.CrdCcInfoVO">
+        select
+            t2.CUSTOMER_NAME, --客户姓名
+            t1.CUSTOMER_NUM, --客户编号
+            t1.ACCT_NUM, --账户编号
+            t1.CURRENCY_CD, --币种
+            t1.CREDIT_LIMIT, --信用额度
+            t1.TEMP_LIMIT, --临时额度
+            t1.CURR_BAL, --当前余额
+            t1.TEMP_LIMIT_BEGIN_DATE, --临时额度开始日期
+            t1.TEMP_LIMIT_END_DATE, --临时额度结束日期
+            t1.ORG_NUM, --核算机构
+            t1.BILLING_CYCLE --账单周期
+        from
+            TB_CRD_CC_INFO t1
+        left join
+            TB_CSM_PARTY t2
+        on
+            t1.CUSTOMER_NUM = t2.CUSTOMER_NUM
+        left join
+            CHAIN_DEPT t3
+        on
+            t1.ORG_NUM = t3.ID
+        where
+            t1.CUSTOMER_NUM = #{customerNum}
+        and
+            t3.ANCESTORS like CONCAT(CONCAT('%', #{orgNum}), '%');
+    </select>
+
+</mapper>

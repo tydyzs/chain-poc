@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.FundGrantDetailMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="fundGrantDetailResultMap" type="org.git.modules.clm.credit.entity.FundGrantDetail">
+        <result column="EVENT_DETAIL_ID" property="eventDetailId"/>
+        <result column="EVENT_MAIN_ID" property="eventMainId"/>
+        <result column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="TRAN_DATE" property="tranDate"/>
+        <result column="CRD_GRANT_ORG_NUM" property="crdGrantOrgNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CRD_MAIN_PRD" property="crdMainPrd"/>
+        <result column="CRD_CURRENCY_CD" property="crdCurrencyCd"/>
+        <result column="CRD_SUM_AMT" property="crdSumAmt"/>
+        <result column="CRD_BEGIN_DATE" property="crdBeginDate"/>
+        <result column="CRD_END_DATE" property="crdEndDate"/>
+        <result column="BUSI_SEGM_AMT" property="busiSegmAmt"/>
+        <result column="BUSI_SEGM_CNT" property="busiSegmCnt"/>
+        <result column="CRD_DETAIL_PRD" property="crdDetailPrd"/>
+        <result column="CRD_DETAIL_AMT" property="crdDetailAmt"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        tran_seq_sn, tran_date, crd_grant_org_num,
+        customer_num, crd_main_prd, crd_currency_cd,
+        crd_sum_amt, crd_begin_date, crd_end_date,
+        busi_segm_amt, busi_segm_cnt, crd_detail_prd,
+        crd_detail_amt
+    </sql>
+
+    <select id="selectFundGrantDetailPage" resultMap="fundGrantDetailResultMap">
+        select * from tb_fund_grant_detail
+    </select>
+
+
+</mapper>

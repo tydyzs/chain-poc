@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.front.mapper.ServiceRecordMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="serviceRecordResultMap" type="org.git.modules.clm.front.entity.ServiceRecord">
+        <id column="id" property="id"/>
+        <result column="group_id" property="groupId"/>
+        <result column="requestor_code" property="requestorCode"/>
+        <result column="responder_code" property="responderCode"/>
+        <result column="request_message" property="requestMessage"/>
+        <result column="response_message" property="responseMessage"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+        <result column="service_code" property="serviceCode"/>
+        <result column="service_sn" property="serviceSn"/>
+        <result column="service_time" property="serviceTime"/>
+        <result column="biz_sn" property="bizSn"/>
+        <result column="retry_count" property="retryCount"/>
+    </resultMap>
+
+
+    <select id="selectServiceRecordPage" resultMap="serviceRecordResultMap">
+        select * from tb_front_service_record where is_deleted = 0
+    </select>
+
+</mapper>

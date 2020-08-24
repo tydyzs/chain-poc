@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.doc.mapper.ExcelTemplateMapper">
+
+    <select id="selectBankCreditTable" parameterType="string" resultType="org.git.modules.clm.doc.entity.BankCreditTable">
+        select  * from
+         (select t.CUSTOMER_NUM,
+               t.CUSTOMER_NAME,
+               t.BEGIN_DATE,
+               t.END_DATE,
+               (nvl(sum(TA_LIMIT_CREDIT), 0) + nvl(sum(TB_LIMIT_CREDIT), 0) + nvl(sum(TC_LIMIT_CREDIT), 0) +
+                nvl(sum(TD_LIMIT_CREDIT), 0) + nvl(sum(TE_LIMIT_CREDIT), 0) + nvl(sum(TF_LIMIT_CREDIT), 0) +
+                nvl(sum(TG_LIMIT_CREDIT), 0)) / 100000000                                                         LIMIT_CREDIT,
+               (nvl(sum(TA_LIMIT_USED), 0) + nvl(sum(TB_LIMIT_USED), 0) + nvl(sum(TC_LIMIT_USED), 0) +
+                nvl(sum(TD_LIMIT_USED), 0) +
+                nvl(sum(TE_LIMIT_USED), 0) + nvl(sum(TF_LIMIT_USED), 0) + nvl(sum(TG_LIMIT_USED), 0)) / 100000000 LIMIT_USED,
+               (nvl(sum(TA_LIMIT_AVI), 0) + nvl(sum(TB_LIMIT_AVI), 0) + nvl(sum(TC_LIMIT_AVI), 0) + nvl(sum(TD_LIMIT_AVI), 0) +
+                nvl(sum(TE_LIMIT_AVI), 0) + nvl(sum(TF_LIMIT_AVI), 0) + nvl(sum(TG_LIMIT_AVI), 0)) / 100000000    LIMIT_AVI,
+               nvl(sum(TA_LIMIT_EARMARK), 0) + nvl(sum(TB_LIMIT_EARMARK), 0) + nvl(sum(TC_LIMIT_EARMARK), 0) +
+               (nvl(sum(TD_LIMIT_EARMARK), 0) + nvl(sum(TE_LIMIT_EARMARK), 0) + nvl(sum(TF_LIMIT_EARMARK), 0) +
+                nvl(sum(TG_LIMIT_EARMARK), 0)) / 100000000                                                        LIMIT_EARMARK,
+               sum(TA_LIMIT_CREDIT) / 100000000                                                                   TA_LIMIT_CREDIT,
+               sum(TA_LIMIT_USED) / 100000000                                                                     TA_LIMIT_USED,
+               sum(TA_LIMIT_AVI) / 100000000                                                                      TA_LIMIT_AVI,
+               sum(TA_LIMIT_EARMARK) / 100000000                                                                  TA_LIMIT_EARMARK,
+               sum(TB_LIMIT_CREDIT) / 100000000                                                                   TB_LIMIT_CREDIT,
+               sum(TB_LIMIT_USED) / 100000000                                                                     TB_LIMIT_USED,
+               sum(TB_LIMIT_AVI) / 100000000                                                                      TB_LIMIT_AVI,
+               sum(TB_LIMIT_EARMARK) / 100000000                                                                  TB_LIMIT_EARMARK,
+               sum(TC_LIMIT_CREDIT) / 100000000                                                                   TC_LIMIT_CREDIT,
+               sum(TC_LIMIT_USED) / 100000000                                                                     TC_LIMIT_USED,
+               sum(TC_LIMIT_AVI) / 100000000                                                                      TC_LIMIT_AVI,
+               sum(TC_LIMIT_EARMARK) / 100000000                                                                  TC_LIMIT_EARMARK,
+               sum(TD_LIMIT_CREDIT) / 100000000                                                                   TD_LIMIT_CREDIT,
+               sum(TD_LIMIT_USED) / 100000000                                                                     TD_LIMIT_USED,
+               sum(TD_LIMIT_AVI) / 100000000                                                                      TD_LIMIT_AVI,
+               sum(TD_LIMIT_EARMARK) / 100000000                                                                  TD_LIMIT_EARMARK,
+               sum(TE_LIMIT_CREDIT) / 100000000                                                                   TE_LIMIT_CREDIT,
+               sum(TE_LIMIT_USED) / 100000000                                                                     TE_LIMIT_USED,
+               sum(TE_LIMIT_AVI) / 100000000                                                                      TE_LIMIT_AVI,
+               sum(TE_LIMIT_EARMARK) / 100000000                                                                  TE_LIMIT_EARMARK,
+               sum(TF_LIMIT_CREDIT) / 100000000                                                                   TF_LIMIT_CREDIT,
+               sum(TF_LIMIT_USED) / 100000000                                                                     TF_LIMIT_USED,
+               sum(TF_LIMIT_AVI) / 100000000                                                                      TF_LIMIT_AVI,
+               sum(TF_LIMIT_EARMARK) / 100000000                                                                  TF_LIMIT_EARMARK,
+               sum(TG_LIMIT_CREDIT) / 100000000                                                                   TG_LIMIT_CREDIT,
+               sum(TG_LIMIT_USED) / 100000000                                                                     TG_LIMIT_USED,
+               sum(TG_LIMIT_AVI) / 100000000                                                                      TG_LIMIT_AVI,
+               sum(TG_LIMIT_EARMARK) / 100000000                                                                  TG_LIMIT_EARMARK
+        from (
+                 select m.CUSTOMER_NUM,
+                        p.CUSTOMER_NAME,
+                        m.BEGIN_DATE,
+                        m.END_DATE,
+                        case m.CRD_DETAIL_PRD when '03010001' then sum(m.LIMIT_CREDIT * nvl(m.EXCHANGE_RATE,1)) end  TA_LIMIT_CREDIT,
+                        case m.CRD_DETAIL_PRD when '03010001' then sum(m.LIMIT_USED * nvl(m.EXCHANGE_RATE,1)) end    TA_LIMIT_USED,
+                        case m.CRD_DETAIL_PRD when '03010001' then sum(m.LIMIT_AVI * nvl(m.EXCHANGE_RATE,1)) end     TA_LIMIT_AVI,
+                        case m.CRD_DETAIL_PRD when '03010001' then sum(m.LIMIT_EARMARK * nvl(m.EXCHANGE_RATE,1)) end TA_LIMIT_EARMARK,
+                        case m.CRD_DETAIL_PRD when '03010002' then sum(m.LIMIT_CREDIT * nvl(m.EXCHANGE_RATE,1)) end  TB_LIMIT_CREDIT,
+                        case m.CRD_DETAIL_PRD when '03010002' then sum(m.LIMIT_USED * nvl(m.EXCHANGE_RATE,1)) end    TB_LIMIT_USED,
+                        case m.CRD_DETAIL_PRD when '03010002' then sum(m.LIMIT_AVI * nvl(m.EXCHANGE_RATE,1)) end     TB_LIMIT_AVI,
+                        case m.CRD_DETAIL_PRD when '03010002' then sum(m.LIMIT_EARMARK * nvl(m.EXCHANGE_RATE,1)) end TB_LIMIT_EARMARK,
+                        case m.CRD_DETAIL_PRD when '03010003' then sum(m.LIMIT_CREDIT * nvl(m.EXCHANGE_RATE,1)) end  TC_LIMIT_CREDIT,
+                        case m.CRD_DETAIL_PRD when '03010003' then sum(m.LIMIT_USED * nvl(m.EXCHANGE_RATE,1)) end    TC_LIMIT_USED,
+                        case m.CRD_DETAIL_PRD when '03010003' then sum(m.LIMIT_AVI * nvl(m.EXCHANGE_RATE,1)) end     TC_LIMIT_AVI,
+                        case m.CRD_DETAIL_PRD when '03010003' then sum(m.LIMIT_EARMARK * nvl(m.EXCHANGE_RATE,1)) end TC_LIMIT_EARMARK,
+                        case m.CRD_DETAIL_PRD when '03010004' then sum(m.LIMIT_CREDIT * nvl(m.EXCHANGE_RATE,1)) end  TD_LIMIT_CREDIT,
+                        case m.CRD_DETAIL_PRD when '03010004' then sum(m.LIMIT_USED * nvl(m.EXCHANGE_RATE,1)) end    TD_LIMIT_USED,
+                        case m.CRD_DETAIL_PRD when '03010004' then sum(m.LIMIT_AVI * nvl(m.EXCHANGE_RATE,1)) end     TD_LIMIT_AVI,
+                        case m.CRD_DETAIL_PRD when '03010004' then sum(m.LIMIT_EARMARK * nvl(m.EXCHANGE_RATE,1)) end TD_LIMIT_EARMARK,
+                        case m.CRD_DETAIL_PRD when '03010005' then sum(m.LIMIT_CREDIT * nvl(m.EXCHANGE_RATE,1)) end  TE_LIMIT_CREDIT,
+                        case m.CRD_DETAIL_PRD when '03010005' then sum(m.LIMIT_USED * nvl(m.EXCHANGE_RATE,1)) end    TE_LIMIT_USED,
+                        case m.CRD_DETAIL_PRD when '03010005' then sum(m.LIMIT_AVI * nvl(m.EXCHANGE_RATE,1)) end     TE_LIMIT_AVI,
+                        case m.CRD_DETAIL_PRD when '03010005' then sum(m.LIMIT_EARMARK * nvl(m.EXCHANGE_RATE,1)) end TE_LIMIT_EARMARK,
+                        case m.CRD_DETAIL_PRD when '03010006' then sum(m.LIMIT_CREDIT * nvl(m.EXCHANGE_RATE,1)) end  TF_LIMIT_CREDIT,
+                        case m.CRD_DETAIL_PRD when '03010006' then sum(m.LIMIT_USED * nvl(m.EXCHANGE_RATE,1)) end    TF_LIMIT_USED,
+                        case m.CRD_DETAIL_PRD when '03010006' then sum(m.LIMIT_AVI * nvl(m.EXCHANGE_RATE,1)) end     TF_LIMIT_AVI,
+                        case m.CRD_DETAIL_PRD when '03010006' then sum(m.LIMIT_EARMARK * nvl(m.EXCHANGE_RATE,1)) end TF_LIMIT_EARMARK,
+                        case m.CRD_DETAIL_PRD when '03010007' then sum(m.LIMIT_CREDIT * nvl(m.EXCHANGE_RATE,1)) end  TG_LIMIT_CREDIT,
+                        case m.CRD_DETAIL_PRD when '03010007' then sum(m.LIMIT_USED * nvl(m.EXCHANGE_RATE,1)) end    TG_LIMIT_USED,
+                        case m.CRD_DETAIL_PRD when '03010007' then sum(m.LIMIT_AVI * nvl(m.EXCHANGE_RATE,1)) end     TG_LIMIT_AVI,
+                        case m.CRD_DETAIL_PRD when '03010007' then sum(m.LIMIT_EARMARK * nvl(m.EXCHANGE_RATE,1)) end TG_LIMIT_EARMARK
+                 from TB_CRD_DETAIL m inner join TB_CSM_PARTY p on p.CUSTOMER_NUM = m.CUSTOMER_NUM
+                 where m.CRD_DETAIL_PRD in
+                       ('03010001', '03010002', '03010003', '03010004', '03010005', '03010006', '03010007')
+                 <if test="_parameter!=null and _parameter!=''">
+                    and p.CUSTOMER_NAME like CONCAT(CONCAT('%',#{_parameter}),'%')
+                 </if>
+                 group by m.CUSTOMER_NUM, p.CUSTOMER_NAME, m.BEGIN_DATE, m.END_DATE, m.CRD_DETAIL_PRD) t
+        group by t.CUSTOMER_NUM, t.CUSTOMER_NAME, t.BEGIN_DATE, t.END_DATE)
+        order by LIMIT_CREDIT desc
+    </select>
+
+</mapper>

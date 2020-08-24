@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.FundGrantMainMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="fundGrantMainResultMap" type="org.git.modules.clm.credit.entity.FundGrantMain">
+        <result column="EVENT_MAIN_ID" property="eventMainId"/>
+        <result column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="TRAN_DATE" property="tranDate"/>
+        <result column="BUSI_DEAL_NUM" property="busiDealNum"/>
+        <result column="TRAN_TYPE_CD" property="tranTypeCd"/>
+        <result column="CRD_APPLY_AMT" property="crdApplyAmt"/>
+        <result column="TRAN_EVENT_STATUS" property="tranEventStatus"/>
+        <result column="TRAN_EVENT_INFO" property="tranEventInfo"/>
+        <result column="TRAN_ACCT_STATUS" property="tranAcctStatus"/>
+        <result column="CRD_CURRENCY_CD" property="crdCurrencyCd"/>
+    </resultMap>
+
+
+    <select id="selectFundGrantMainPage" resultMap="fundGrantMainResultMap">
+        select * from tb_fund_grant_main
+    </select>
+
+</mapper>

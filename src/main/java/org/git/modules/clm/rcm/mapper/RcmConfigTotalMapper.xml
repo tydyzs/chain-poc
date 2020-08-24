@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmConfigTotalMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="rcmConfigTotalResultMap" type="org.git.modules.clm.rcm.entity.RcmConfigTotal">
+        <result column="QUOTA_NUM" property="quotaNum"/>
+        <result column="QUOTA_USED_AMT" property="quotaUsedAmt"/>
+        <result column="QUOTA_FREE_AMT" property="quotaFreeAmt"/>
+        <result column="QUOTA_USED_RATIO" property="quotaUsedRatio"/>
+        <result column="QUOTA_FREE_RATIO" property="quotaFreeRatio"/>
+        <result column="QUOTA_TOTAL_SUM" property="quotaTotalSum"/>
+        <result column="LAST_YEAR_AMT" property="lastYearAmt"/>
+        <result column="LAST_YEAR_RATIO" property="lastYearRatio"/>
+        <result column="MONTH_TO_MONTH_AMT" property="monthToMonthAmt"/>
+        <result column="MONTH_TO_MONTH_RATIO" property="monthToMonthRatio"/>
+        <result column="HIS_FREQUENCY_A" property="hisFrequencyA"/>
+        <result column="HIS_FREQUENCY_B" property="hisFrequencyB"/>
+        <result column="HIS_FREQUENCY_C" property="hisFrequencyC"/>
+        <result column="HIS_FREQUENCY" property="hisFrequency"/>
+        <result column="HIS_FREQUENCY_A2" property="hisFrequencyA2"/>
+        <result column="HIS_FREQUENCY_B2" property="hisFrequencyB2"/>
+        <result column="HIS_FREQUENCY_C2" property="hisFrequencyC2"/>
+        <result column="HIS_FREQUENCY_YEAR" property="hisFrequencyYear"/>
+        <result column="HIS_FREQUENCY_A3" property="hisFrequencyA3"/>
+        <result column="QUOTA_TOTAL_TYPE" property="quotaTotalType"/>
+        <result column="YEAR_TO_YEAR_AMT" property="yearToYearAmt"/>
+        <result column="YEAR_TO_YEAR_RATIO" property="yearToYearRatio"/>
+        <result column="NET_ASSETS" property="netAssets"/>
+        <result column="TOTAL_MONTH" property="totalMonth"/>
+        <result column="TOTAL_YEAR" property="totalYear"/>
+        <result column="USE_ORG_NUM" property="useOrgNum"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="REMARK" property="remark"/>
+        <result column="HIS_FREQUENCY_B3" property="hisFrequencyB3"/>
+        <result column="HIS_FREQUENCY_C3" property="hisFrequencyC3"/>
+        <result column="HIS_FREQUENCY_MONTH" property="hisFrequencyMonth"/>
+        <result column="NET_CAPITAL" property="netCapital"/>
+        <result column="NET_PRIMARY_CAPITAL" property="netPrimaryCapital"/>
+    </resultMap>
+
+
+    <select id="selectRcmConfigTotalPage" resultMap="rcmConfigTotalResultMap">
+        select *
+        from TB_RCM_CONFIG_TOTAL
+    </select>
+
+
+</mapper>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Service>
+    <Service_Header>
+        <service_id>00870000259203</service_id>
+        <requester_id>3456</requester_id>
+        <channel_id>22</channel_id>
+        <service_time>2014-01-03 09:35:45.222</service_time>
+        <version_id>01</version_id>
+        <route_flag>99</route_flag>
+        <common></common>
+    </Service_Header>
+<Service_Body>
+    <ext_attributes>
+          <req_serv_id>259203</req_serv_id>
+          <iterate_no></iterate_no>
+          <requester_id></requester_id>
+          <channel_id></channel_id>
+          <ori_req_id></ori_req_id>
+          <ori_cha_id></ori_cha_id>
+          <req_servcode></req_servcode>
+          <channel_servcode></channel_servcode>
+          <ori_req_servcode></ori_req_servcode>
+          <ori_cha_servcode></ori_cha_servcode>
+          <terminal_id></terminal_id>
+          <branch_id></branch_id>
+          <operator_id></operator_id>
+          <sub_auth_teller></sub_auth_teller>
+          <auth_psw01></auth_psw01>
+          <bran_auth_teller></bran_auth_teller>
+          <auth_psw02></auth_psw02>
+          <cen_auth_teller01></cen_auth_teller01>
+          <auth_psw03></auth_psw03>
+          <cen_auth_teller02></cen_auth_teller02>
+          <ori_req_date>2019-11-11</ori_req_date>
+          <ori_req_sn>sn00011123</ori_req_sn>
+          <ori_req_timestamp></ori_req_timestamp>
+          <requester_date></requester_date>
+          <requester_sn></requester_sn>
+          <mac_value></mac_value>
+    </ext_attributes>
+    <request>
+            <busi_deal_num>1000011</busi_deal_num>
+            <tran_type_cd>06</tran_type_cd>
+            <customer_num>550500</customer_num>
+            <crd_status>01</crd_status>
+            <frozen_req_date>2019-10-10</frozen_req_date>
+            <frozen_begin_date>2019-11-25</frozen_begin_date>
+            <frozen_over_date>2019-12-02</frozen_over_date>
+            <crd_admit_info>
+                    <item>
+                        <crd_detail_prd>0100</crd_detail_prd>
+                        <crd_admit_flag>1</crd_admit_flag>
+                    </item>
+                    <item>
+                        <crd_detail_prd>0100</crd_detail_prd>
+                        <crd_admit_flag>1</crd_admit_flag>
+                    </item>
+            </crd_admit_info>
+        </request>
+        <response/>
+  </Service_Body>
+</Service>

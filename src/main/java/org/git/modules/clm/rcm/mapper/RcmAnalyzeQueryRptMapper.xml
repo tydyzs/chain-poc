@@ -1,0 +1,583 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmAnalyzeQueryRptMapper">
+
+
+    <!--限额分析-查询客户授信集中度简表 TB_RCM_CONFIG_TOTAL和TB_RCM_CUS_QUOTA_RPT数据维度相同，因此直接取数 -->
+    <select id="selectRcmCusQuotaRptPage" resultType="org.git.modules.clm.rcm.vo.RcmCusQuotaRptVO">
+        select r.QUOTA_INDEX_NUM,   --限额指标编号
+                r.QUOTA_INDEX_NAME,  --限额指标名称
+                r.QUOTA_USED_AMT / #{queryVO.amtUnit}  as QUOTA_USED_AMT, --实际授信情况(余额)
+                r.QUOTA_USED_RATIO, --实际授信情况(占比)
+                decode(r.OBSERVE_VALUE_TYPE, 1, r.OBSERVE_VALUE / #{queryVO.amtUnit}, r.OBSERVE_VALUE) as OBSERVE_VALUE,  --观察值
+                decode(r.WARN_VALUE_TYPE, 1, r.WARN_VALUE / #{queryVO.amtUnit}, r.WARN_VALUE)          as WARN_VALUE,     --预警值
+                decode(r.CONTROL_VALUE_TYPE, 1, r.CONTROL_VALUE / #{queryVO.amtUnit}, r.CONTROL_VALUE) as CONTROL_VALUE,  --控制值
+                r.TOTAL_MONTH,                                                                               --月份
+                r.TOTAL_YEAR,                                                                                --年份
+                r.USE_ORG_NUM                                                                                --生效机构
+            from TB_RCM_CONFIG_TOTAL r
+        where  TOTAL_MONTH = #{queryVO.totalMonth}
+            and TOTAL_YEAR = #{queryVO.totalYear}
+            <if test="queryVO.quotaIndexNums!=null and queryVO.quotaIndexNums.size>0">
+            and r.QUOTA_INDEX_NUM in
+                <foreach collection="queryVO.quotaIndexNums" item="quotaIndexNum" open="(" separator="," close=")">
+                    #{quotaIndexNum}
+                </foreach>
+            </if>
+        <include refid="selectOrg"/>
+    </select>
+
+    <sql id="getUnitFlagByLevel">
+        case when r.QUOTA_LEVEL_A_AMT is not null then (
+                  case when #{queryVO.amtUnit} = 10000 then '万元'
+                       when #{queryVO.amtUnit} = 100000000 then '亿元' end)
+             when r.QUOTA_LEVEL_B_AMT is not null then (
+                  case when #{queryVO.amtUnit} = 10000 then '万元'
+                       when #{queryVO.amtUnit} = 100000000 then '亿元' end)
+             when r.QUOTA_LEVEL_C_AMT is not null then (
+                  case when #{queryVO.amtUnit} = 10000 then '万元'
+                       when #{queryVO.amtUnit} = 100000000 then '亿元' end)
+             when r.QUOTA_LEVEL_A_RATIO is not null then '%'
+             when r.QUOTA_LEVEL_B_RATIO is not null then '%'
+             when r.QUOTA_LEVEL_C_RATIO is not null then '%' end
+    </sql>
+
+
+    <!--限额分析-查询最大十家客户贷款集中度明细表 -->
+    <select id="selectRcmLoanTenCusRptPage" resultType="org.git.modules.clm.rcm.vo.RcmLoanTenCusRptVO">
+        select r.INFO_NUM,
+               r.CUSTOMER_NAME,
+               r.CUSTOMER_NUM,
+               r.TOTAL_MONTH,
+               r.TOTAL_YEAR,
+               r.USE_ORG_NUM,
+               cast(r.LOAN_BALANCE / #{queryVO.amtUnit} as decimal(24, 2))                               as LOAN_BALANCE,
+               cast(r.LOAN_BALANCE_LAST_MONTH / #{queryVO.amtUnit} as decimal(24, 2))                    as LOAN_BALANCE_LAST_MONTH,
+               cast((r.LOAN_BALANCE - r.LOAN_BALANCE_LAST_MONTH) / #{queryVO.amtUnit} as decimal(24, 2)) as CHANGE
+        from TB_RCM_LOAN_TEN_CUS_RPT r
+        where TOTAL_MONTH = #{queryVO.totalMonth}
+          and TOTAL_YEAR = #{queryVO.totalYear}
+        <include refid="selectOrg"/>
+        order by r.LOAN_BALANCE desc
+    </select>
+
+<!--  查询限额管控参数信息  -->
+    <select id="selectQuotaInfo" resultType="org.git.modules.clm.rcm.vo.RcmQuotaInfoVO">
+        select ri.QUOTA_INDEX_NUM,
+               ri.QUOTA_INDEX_NAME,
+               case when i.QUOTA_CONTROL_TYPE = '1' then (
+                         case when #{queryVO.amtUnit} = 10000 then '万元'
+                              when #{queryVO.amtUnit} = 100000000 then '亿元' end)
+                    when i.QUOTA_CONTROL_TYPE = '2' then '%' end              as UNIT_FLAG,
+               cast(i.CONTROL_AMT / #{queryVO.amtUnit} as decimal(24, 2))     as CONTROL_AMT,
+               cast(i.CONTROL_RATIO as decimal(10, 6))                        as CONTROL_RATIO,
+               cast(i.WARNING_AMT / #{queryVO.amtUnit} as decimal(24, 2))     as WARNING_AMT,
+               cast(i.WARNING_RATIO as decimal(10, 6))                        as WARNING_RATIO,
+               cast(i.OBSERVATION_AMT / #{queryVO.amtUnit} as decimal(24, 2)) as OBSERVATION_AMT,
+               cast(i.OBSERVATION_RATIO as decimal(10, 6))                    as OBSERVATION_RATIO,
+               cast(j.TOTAL_AMT / #{queryVO.amtUnit} as decimal(24, 2))       as TOTAL_AMT,
+               cast(j.TOTAL_CHANGE / #{queryVO.amtUnit} as decimal(24, 2))    as TOTAL_CHANGE
+        from (<include refid="selectQuota"/>) i
+        join TB_RCM_INDEX ri on ri.QUOTA_INDEX_NUM = i.QUOTA_INDEX_NUM
+        join (select t.TOTAL_AMT as TOTAL_AMT,
+                    (t.TOTAL_AMT - h.LAST_TOTAL_AMT) as TOTAL_CHANGE
+              from (select sum (r.LOAN_BALANCE) as TOTAL_AMT
+                    from TB_RCM_LOAN_TEN_CUS_RPT r
+                    where TOTAL_MONTH = #{queryVO.totalMonth}
+                    and TOTAL_YEAR = #{queryVO.totalYear}
+                    and USE_ORG_NUM = #{queryVO.orgNum}
+                    ) t,
+                   (select sum (r.LOAN_BALANCE) as LAST_TOTAL_AMT
+                   from TB_RCM_LOAN_TEN_CUS_RPT r
+                   where TOTAL_MONTH = #{queryVO.lastMonth}
+                   and TOTAL_YEAR = #{queryVO.lastMonthYear}
+                   and USE_ORG_NUM = #{queryVO.orgNum}) h) j on i.QUOTA_INDEX_NUM = #{quotaNum}
+    </select>
+
+
+    <!--机构限制-->
+    <sql id="selectOrg">
+        <choose>
+            <when test='queryVO.orgNum == null or queryVO.orgNum == ""'>
+                <!--页面传入机构号为空-->
+                and r.USE_ORG_NUM = #{queryVO.userOrgNum}
+            </when>
+            <when test='queryVO.userOrgType == "1"'>
+                <!--登录用户机构类型为省联社(一级机构)-->
+                <!--页面传入机构号不为空-->
+                and r.USE_ORG_NUM = #{queryVO.orgNum}
+            </when>
+            <when test='queryVO.userOrgType == "2"'>
+                <!--登录用户机构类型为信用社（二级机构）-->
+                <!--页面传入机构号不为空-->
+                and exists (select 1
+                            from CHAIN_DEPT d
+                            where d.PARENT_ID = #{queryVO.userOrgNum}
+                              and d.ID = #{queryVO.orgNum}
+                              and r.USE_ORG_NUM = d.ID
+                            )
+            </when>
+            <when test='queryVO.userOrgType == "3"'>
+                <!--登录用户机构类型为成员行-->
+                <!--页面传入机构号不为空,且页面传入机构与登录用户机构所属成员行相同-->
+                and r.USE_ORG_NUM = #{queryVO.orgNum}
+                and #{queryVO.orgNum} = #{queryVO.userOrgNum}
+            </when>
+        </choose>
+    </sql>
+
+    <!--查询限额指标的预警值、控制值、观察值-->
+    <sql id="selectQuota">
+        select QUOTA_NUM,                               --集中度限额编号
+               QUOTA_INDEX_NUM,                         --限额指标编号
+               QUOTA_CONTROL_TYPE,                      --阈值类型
+               max(CONTROL_AMT)       CONTROL_AMT,      --控制值(金额)
+               max(CONTROL_RATIO)     CONTROL_RATIO,    --控制值(占比)
+               max(WARNING_AMT)       WARNING_AMT,      --预警值(金额)
+               max(WARNING_RATIO)     WARNING_RATIO,    --预警值(占比)
+               max(OBSERVATION_AMT)   OBSERVATION_AMT,  --观察值(金额)
+               max(OBSERVATION_RATIO) OBSERVATION_RATIO --观察值(占比)
+        from (select QUOTA_NUM,
+                     QUOTA_INDEX_NUM,
+                     QUOTA_CONTROL_TYPE,
+                     case when QUOTA_LEVEL = '1' and QUOTA_CONTROL_TYPE = '1' then QUOTA_CONTROL_AMT end   CONTROL_AMT,
+                     case when QUOTA_LEVEL = '1' and QUOTA_CONTROL_TYPE = '2' then QUOTA_CONTROL_RATIO end CONTROL_RATIO,
+                     case when QUOTA_LEVEL = '2' and QUOTA_CONTROL_TYPE = '1' then QUOTA_CONTROL_AMT end   WARNING_AMT,
+                     case when QUOTA_LEVEL = '2' and QUOTA_CONTROL_TYPE = '2' then QUOTA_CONTROL_RATIO end WARNING_RATIO,
+                     case when QUOTA_LEVEL = '3' and QUOTA_CONTROL_TYPE = '1' then QUOTA_CONTROL_AMT end   OBSERVATION_AMT,
+                     case when QUOTA_LEVEL = '3' and QUOTA_CONTROL_TYPE = '2' then QUOTA_CONTROL_RATIO end OBSERVATION_RATIO
+              from TB_RCM_CONFIG_PARA r
+              where 1 = 1
+              <include refid="selectOrg"/>) as t
+        group by t.QUOTA_INDEX_NUM, t.QUOTA_NUM, t.QUOTA_CONTROL_TYPE
+        order by 1
+    </sql>
+
+
+
+    <!--限额分析-查询最大十家客户授信集中度明细表 -->
+    <select id="selectRcmCreditTenCusRptPage" resultType="org.git.modules.clm.rcm.vo.RcmCreditTenCusRptVO">
+        select r.INFO_NUM,
+               r.CUSTOMER_NAME,
+               r.CUSTOMER_NUM,
+               r.TOTAL_MONTH,
+               r.TOTAL_YEAR,
+               r.USE_ORG_NUM,
+               cast(r.CRD_BALANCE / #{queryVO.amtUnit} as decimal(24, 2))                        as CRD_BALANCE,
+               cast(r.CRD_BALANCE_LAST_MONTH / #{queryVO.amtUnit} as decimal(24, 2))             as CRD_BALANCE_LAST_MONTH,
+               cast((CRD_BALANCE-CRD_BALANCE_LAST_MONTH) / #{queryVO.amtUnit} as decimal(24, 2)) as CHANGE
+        from TB_RCM_CREDIT_TEN_CUS_RPT r
+        where TOTAL_MONTH = #{queryVO.totalMonth}
+          and TOTAL_YEAR = #{queryVO.totalYear}
+        <include refid="selectOrg"/>
+        order by r.CRD_BALANCE desc
+    </select>
+
+
+    <!--限额分析-查询最大十家集团客户授信集中度明细表  -->
+    <select id="selectRcmCreditTenGroupCusRptPage" resultType="org.git.modules.clm.rcm.vo.RcmCreditTenGroupCusRptVO">
+        select r.INFO_NUM,
+               r.CUSTOMER_NAME,
+               r.CUSTOMER_NUM,
+               r.TOTAL_MONTH,
+               r.TOTAL_YEAR,
+               r.USE_ORG_NUM,
+               cast(r.CRD_BALANCE / #{queryVO.amtUnit} as decimal(24, 2))                          as CRD_BALANCE,
+               cast(r.CRD_BALANCE_LAST_MONTH / #{queryVO.amtUnit} as decimal(24, 2))               as CRD_BALANCE_LAST_MONTH,
+               cast((CRD_BALANCE - CRD_BALANCE_LAST_MONTH) / #{queryVO.amtUnit} as decimal(24, 2)) as CHANGE
+        from TB_RCM_CREDIT_TEN_GROUP_CUS r
+        where TOTAL_MONTH = #{queryVO.totalMonth}
+          and TOTAL_YEAR = #{queryVO.totalYear}
+        <include refid="selectOrg"/>
+        order by r.CRD_BALANCE desc
+    </select>
+
+
+    <!--限额分析-查询行业授信集中度简表 -->
+    <select id="selectRcmIndustryQuotaBaseRptPage" resultType="org.git.modules.clm.rcm.vo.RcmIndustryQuotaBaseRptVO">
+        select r.INFO_NUM,
+               r.TOTAL_MONTH,
+               r.TOTAL_YEAR,
+               r.USE_ORG_NUM,
+               r.INDUSTRY,
+               d.DICT_VALUE                                                    as QUOTA_NAME,
+               cast(r.CRD_BALANCE / #{queryVO.amtUnit} as decimal(24,2))       as CRD_BALANCE,
+               r.CRD_RATIO                                                     as CRD_RATIO,
+               cast(r.QUOTA_LEVEL_A_AMT / #{queryVO.amtUnit} as decimal(24,2)) as QUOTA_LEVEL_A_AMT,
+               r.QUOTA_LEVEL_A_RATIO                                           as QUOTA_LEVEL_A_RATIO,
+               cast(r.QUOTA_LEVEL_B_AMT / #{queryVO.amtUnit} as decimal(24,2)) as QUOTA_LEVEL_B_AMT,
+               r.QUOTA_LEVEL_B_RATIO                                           as QUOTA_LEVEL_B_RATIO,
+               cast(r.QUOTA_LEVEL_C_AMT / #{queryVO.amtUnit} as decimal(24,2)) as QUOTA_LEVEL_C_AMT,
+               r.QUOTA_LEVEL_C_RATIO                                           as QUOTA_LEVEL_C_RATIO,
+               <include refid="getUnitFlagByLevel"/>                           as UNIT_FLAG
+        from TB_RCM_INDUSTRY_QUOTA_BASE_RPT r
+        join CHAIN_DICT d on r.INDUSTRY = d.DICT_KEY and d.CODE = 'CD000271'
+        where TOTAL_MONTH = #{queryVO.totalMonth}
+          and TOTAL_YEAR = #{queryVO.totalYear}
+        <include refid="selectOrg"/>
+    </select>
+
+
+    <!--限额分析-行业授信集中度明细表 -->
+    <select id="selectRcmIndustryQuotaDetailRptPage"
+            resultType="org.git.modules.clm.rcm.vo.RcmIndustryQuotaDetailRptVO">
+        select r.INFO_NUM,
+               r.QUOTA_NUM,
+               ri.QUOTA_INDEX_NAME,
+               cast(r.BIZ_BALANCE / #{queryVO.amtUnit} as decimal(24,2))       as BIZ_BALANCE,
+               r.INDUSTRY_QUOTA                                                as INDUSTRY_QUOTA,
+               cast(r.QUOTA_LEVEL_A_AMT / #{queryVO.amtUnit} as decimal(24,2)) as QUOTA_LEVEL_A_AMT,
+               r.QUOTA_LEVEL_A_RATIO                                           as QUOTA_LEVEL_A_RATIO,
+               cast(r.QUOTA_LEVEL_B_AMT / #{queryVO.amtUnit} as decimal(24,2)) as QUOTA_LEVEL_B_AMT,
+               r.QUOTA_LEVEL_B_RATIO                                           as QUOTA_LEVEL_B_RATIO,
+               cast(r.QUOTA_LEVEL_C_AMT / #{queryVO.amtUnit} as decimal(24,2)) as QUOTA_LEVEL_C_AMT,
+               r.QUOTA_LEVEL_C_RATIO                                           as QUOTA_LEVEL_C_RATIO,
+               <include refid="getUnitFlagByLevel"/>                           as UNIT_FLAG,
+               r.TOTAL_MONTH,
+               r.TOTAL_YEAR,
+               r.USE_ORG_NUM
+        from TB_RCM_INDUSTRY_QUOTA_DETAIL r
+        join TB_RCM_INDEX ri on ri.QUOTA_INDEX_NUM = r.QUOTA_NUM
+        where TOTAL_MONTH = #{queryVO.totalMonth}
+          and TOTAL_YEAR = #{queryVO.totalYear}
+        <include refid="selectOrg"/>
+    </select>
+
+    <!--限额分析-查询同业客户风险暴露明细表 -->
+    <select id="selectRcmBankRiskExposureRptPage" resultType="org.git.modules.clm.rcm.vo.RcmBankRiskExposureRptVO">
+        select r.INFO_NUM,
+        r.CUSTOMER_NAME,
+        r.CUSTOMER_NUM,
+        r.TOTAL_MONTH,
+        r.TOTAL_YEAR,
+        r.USE_ORG_NUM,
+        cast(r.CRD_BALANCE / #{queryVO.amtUnit} as decimal(24, 2)) as CRD_BALANCE,
+        cast(r.CRD_RATIO / #{queryVO.amtUnit} as decimal(24, 2)) as CRD_RATIO
+        from tb_rcm_bank_risk_exposure_rpt r
+        where TOTAL_MONTH = #{queryVO.totalMonth}
+        and TOTAL_YEAR = #{queryVO.totalYear}
+        <include refid="selectOrg"/>
+        order by r.CRD_BALANCE desc
+    </select>
+
+    <!--限额分析-查询匿名客户风险暴露明细表 -->
+    <select id="selectAnonymityRiskExposureRptPage" resultType="org.git.modules.clm.rcm.vo.RcmAnonymityRiskExposureRptVO">
+        select * from
+            (select r.INFO_NUM,
+                r.TOTAL_MONTH,
+                r.TOTAL_YEAR,
+                r.USE_ORG_NUM,
+                cast(r.CRD_BALANCE / #{queryVO.amtUnit} as decimal(24, 2)) as CRD_BALANCE,
+                cast(r.crd_balance_last_month / #{queryVO.amtUnit} as decimal(24, 2)) as crd_balance_last_month,
+                ROW_NUMBER() OVER (PARTITION BY USE_ORG_NUM ORDER BY TOTAL_YEAR,TOTAL_MONTH) ROW_NUM
+                from TB_RCM_ANONYMITY_RISKEXPOSURE r
+                where 1=1
+                <if test="queryVO.totalYear != null and queryVO.totalYear != ''">
+                  and r.TOTAL_YEAR = #{queryVO.totalYear}
+                </if>
+                <include refid="selectOrg"/>
+            ) t
+            where t.ROW_NUM &lt;= 12
+    </select>
+
+
+    <!--限额分析-查询风险暴露情况简表 -->
+    <select id="selectRcmRiskExposureRptPage" resultType="org.git.modules.clm.rcm.vo.RcmRiskExposureRptVO">
+        select r.INFO_NUM,
+               r.QUOTA_TYPE,
+               ri.QUOTA_INDEX_NAME,
+               cast(r.AMT / #{queryVO.amtUnit} as decimal(24,2))               as AMT,
+               r.RATIO                                                         as RATIO,
+               case when r.QUOTA_LEVEL_C_AMT is not null then (
+                         case when #{queryVO.amtUnit} = 10000 then '万元'
+                              when #{queryVO.amtUnit} = 100000000 then '亿元' end)
+                    when r.QUOTA_LEVEL_C_RATIO is not null then '%' end        as UNIT_FLAG,
+               cast(r.QUOTA_LEVEL_C_AMT / #{queryVO.amtUnit} as decimal(24,2)) as QUOTA_LEVEL_C_AMT,
+               r.QUOTA_LEVEL_C_RATIO                                           as QUOTA_LEVEL_C_RATIO,
+               r.TOTAL_MONTH,
+               r.TOTAL_YEAR,
+               r.USE_ORG_NUM,
+               r.USER_NUM
+        from TB_RCM_RISK_EXPOSURE_RPT r
+        join TB_RCM_INDEX ri on ri.QUOTA_INDEX_NUM = r.QUOTA_TYPE
+        where TOTAL_MONTH = #{queryVO.totalMonth}
+          and TOTAL_YEAR = #{queryVO.totalYear}
+        <include refid="selectOrg"/>
+    </select>
+
+
+    <!--查询 风险暴露超过1亿元（含）的单一客户  -->
+    <select id="selectOverOneHundredMillion" resultType="org.git.modules.clm.rcm.vo.RcmRiskOverOneHundredMillionRptVO">
+        select r.CUSTOMER_NUM,                                                                                    -- 客户编号
+            cp.CUSTOMER_NAME,                                                                                  -- 客户名称
+            cast(r.APPROVE_EXP_AMOUNT as decimal(24, 2))                       as APPROVE_EXP_AMOUNT, -- 批复额度
+            cast(r.CREDIT_EXP_BALANCE as decimal(24, 2))                       as CREDIT_EXP_BALANCE, -- 授信敞口余额
+            cp1.CUSTOMER_NAME                                                           as GROUP_NAME,         -- 所属集团
+            cast(r.CREDIT_EXP_BALANCE - (select max(CREDIT_EXP_BALANCE)
+            from TB_CRD_STATIS_CSM_HS ch
+            where CUSTOMER_NUM = r.CUSTOMER_NUM
+            and YEAR = FNC_GET_HS_DATE('3', 'y')
+            and MONTH = FNC_GET_HS_DATE('3', 'd')
+            ) as decimal(24, 2))                   as CHANGE,             -- 较上月变化
+            cast(r.CREDIT_EXP_BALANCE / ci.NET_PRIMARY_CAPITAL as decimal(24, 6)) * 100 as RATIO,               -- 占一级资本净额比例(授信敞口余额/一级资本净额)
+            r.ORG_NUM
+        from TB_CRD_STATIS_CSM r
+            left join TB_RCM_NET_CAPITAL ci
+            on ci.USE_ORG_NUM = r.ORG_NUM and ci.NET_PRIMARY_CAPITAL > 0
+            join TB_CSM_PARTY cp on r.CUSTOMER_NUM = cp.CUSTOMER_NUM
+            left join TB_CSM_GROUP_MEMBER gm on r.CUSTOMER_NUM = gm.MEMBER_CUSTOMER_NUM
+            left join TB_CSM_PARTY cp1 on gm.CUSTOMER_NUM = cp1.CUSTOMER_NUM
+        where r.CREDIT_EXP_BALANCE >= 100000000
+        <include refid="selectOrgNum"/>
+        <!--客户名称-->
+        <if test="queryVO.customerName != null and queryVO.customerName != ''">
+            and exists (select 1
+            from TB_CSM_PARTY
+            where CUSTOMER_NAME like CONCAT(CONCAT('%',#{queryVO.customerName}),'%')
+            and CUSTOMER_NUM = r.CUSTOMER_NUM
+            )
+        </if>
+        order by r.APPROVE_EXP_AMOUNT desc
+    </select>
+
+
+    <!-- 查询风险暴露超过一级资本净额2.5%的集团客户  -->
+    <select id="selectOverTwoPointFivePercent" resultType="org.git.modules.clm.rcm.vo.RcmRiskOverTwoPointFivePercentRptVO">
+        select r.*,
+               r.GROUP_CREDIT_EXP_BALANCE / cast(t2.NET_PRIMARY_CAPITAL as decimal(24, 2)) * 100 as GROUP_CAPITAL_RATIO
+            from (select d.ORG_NUM,
+                        a.CUSTOMER_NUM             GROUP_CUSTOMER_NUM,       -- 集团客户
+                        a.CUSTOMER_NAME            GROUP_CUSTOMER_NAME,      -- 集团名称
+                        cast(sum(APPROVE_EXP_AMOUNT) as decimal(24, 2)) as GROUP_APPROVE_EXP_AMOUNT, -- 集团批复总额
+                        cast(sum(CREDIT_EXP_BALANCE) as decimal(24, 2)) as GROUP_CREDIT_EXP_BALANCE  -- 集团已用总额
+                    from TB_CSM_PARTY a,
+                        TB_CSM_GROUP_MEMBER b,
+                        TB_CRD_STATIS_CSM c,
+                        TB_CSM_MANAGE_TEAM d
+                        where a.CUSTOMER_NUM = b.CUSTOMER_NUM
+                        and c.CUSTOMER_NUM = b.MEMBER_CUSTOMER_NUM
+                        and d.CUSTOMER_NUM = a.CUSTOMER_NUM
+                    group by d.ORG_NUM, a.CUSTOMER_NUM, a.CUSTOMER_NAME) r
+            left join TB_RCM_NET_CAPITAL t2
+                on t2.USE_ORG_NUM = r.ORG_NUM and t2.NET_PRIMARY_CAPITAL > 0
+        where 1=1
+          /*and (r.GROUP_CREDIT_EXP_BALANCE / t2.NET_PRIMARY_CAPITAL) > 0.025*/
+        <include refid="selectOrgNum"/>
+        <!--客户名称-->
+        <if test="queryVO.customerName != null and queryVO.customerName != ''">
+            and exists (select 1
+            from TB_CSM_PARTY
+            where CUSTOMER_NAME like CONCAT(CONCAT('%',#{queryVO.customerName}),'%')
+            and CUSTOMER_NUM = r.GROUP_CUSTOMER_NUM
+            )
+        </if>
+        order by r.GROUP_APPROVE_EXP_AMOUNT desc
+    </select>
+
+    <sql id="selectOrgNum">
+        <choose>
+            <when test='queryVO.orgNum == null or queryVO.orgNum == ""'>
+                <!--页面传入机构号为空-->
+                and r.ORG_NUM = #{queryVO.userOrgNum}
+            </when>
+            <when test='queryVO.userOrgType == "1"'>
+                <!--登录用户机构类型为省联社-->
+                <!--页面传入机构号不为空-->
+                and r.ORG_NUM = #{queryVO.orgNum}
+            </when>
+            <when test='queryVO.userOrgType == "2"'>
+                <!--登录用户机构类型为信用社（二级机构）-->
+                <!--页面传入机构号不为空-->
+                and exists (select 1
+                from CHAIN_DEPT d
+                where d.PARENT_ID = #{queryVO.userOrgNum}
+                  and d.ID = #{queryVO.orgNum}
+                  and r.ORG_NUM = #{queryVO.orgNum}
+                )
+            </when>
+            <when test='queryVO.userOrgType == "3"'>
+                <!--登录用户机构类型为成员行-->
+                <!--页面传入机构号不为空,且页面传入机构与登录用户机构所属成员行相同-->
+                and r.ORG_NUM = #{queryVO.orgNum}
+                and #{queryVO.orgNum} = #{queryVO.userOrgNum}
+            </when>
+        </choose>
+    </sql>
+
+
+<!--    &lt;!&ndash;风险暴露 业务明细 &ndash;&gt;-->
+<!--    <select id="selectBusinessInfo" resultType="org.git.modules.clm.rcm.vo.RcmRiskBusinessInfoVO">-->
+<!--        select s.BUSINESS_NUM,        &#45;&#45; 业务编号-->
+<!--               s.PRODUCT_NUM,         &#45;&#45; 业务品种编号-->
+<!--               pp.PRODUCT_NAME,       &#45;&#45; 业务品种名称-->
+<!--               pp.RISK_EXPOSURE_TYPE, &#45;&#45; 风险暴露类型（CD000177）（1一般风险暴露、2特定风险暴露、3潜在风险暴露）-->
+<!--               s.BALANCE,             &#45;&#45; 单笔用信敞口余额-->
+<!--               s.GUARANTEE_TYPE,      &#45;&#45; 担保方式 (CD000100)-->
+<!--               s.BEGIN_DATE,          &#45;&#45; 用信起期-->
+<!--               s.END_DATE,            &#45;&#45; 用信止期-->
+<!--               s.ORG_NUM,             &#45;&#45; 经办机构-->
+<!--               s.USER_NUM             &#45;&#45; 经办人-->
+<!--        from TB_CRD_STATIS_CSM sc,-->
+<!--        TB_PAR_PRODUCT pp,-->
+<!--        (select CUSTOMER_NUM,-->
+<!--                SUMMARY_NUM         as BUSINESS_NUM,-->
+<!--                PRODUCT_NUM,-->
+<!--                SUMMARY_BAL         as BALANCE,-->
+<!--                MAIN_GUARANTEE_TYPE as GUARANTEE_TYPE,-->
+<!--                BEGIN_DATE,-->
+<!--                END_DATE,-->
+<!--                ORG_NUM,-->
+<!--                USER_NUM-->
+<!--        from TB_CRD_SUMMARY-->
+<!--        where SUMMARY_STATUS = '01' or SUMMARY_STATUS = '02' or SUMMARY_STATUS = '03'-->
+<!--        union all-->
+<!--        select CUSTOMER_NUM,-->
+<!--               BUSI_DEAL_NUM      as BUSINESS_NUM,-->
+<!--               BUSI_PRD_NUM       as PRODUCT_NUM,-->
+<!--               CERT_APPLY_BALANCE as BALANCE,-->
+<!--               CERT_GUARANTY_TYPE as GUARANTEE_TYPE,-->
+<!--               CERT_BEGIN_DATE    as BEGIN_DATE,-->
+<!--               CERT_END_DATE      as END_DATE,-->
+<!--               BUSI_DEAL_ORG_NUM  as ORG_NUM,-->
+<!--               USER_NUM-->
+<!--        from TB_CRD_BUSI_CERT_INFO-->
+<!--        where CERT_STATUS = '01') s-->
+<!--        where pp.PRODUCT_NUM = s.PRODUCT_NUM-->
+<!--          and sc.CUSTOMER_NUM = s.CUSTOMER_NUM-->
+<!--        <if test='userOrgType == "3"'>-->
+<!--            and s.ORG_NUM = #{userOrgNum}-->
+<!--        </if>-->
+<!--    </select>-->
+
+
+<!--    &lt;!&ndash;查询对应 押品信息 &ndash;&gt;-->
+<!--    <select id="selectSuretyInfo" resultType="org.git.modules.clm.credit.vo.TbCrdSuretyVO">-->
+<!--        select cs.SURETY_NUM,     &#45;&#45;担保物编号-->
+<!--               cs.CRD_MAIN_PRD,   &#45;&#45;额度二级产品-->
+<!--               cs.CRD_MAIN_NUM,   &#45;&#45;额度二级编号-->
+<!--               cs.CRD_DETAIL_PRD, &#45;&#45;额度三级产品-->
+<!--               cs.CRD_DETAIL_NUM, &#45;&#45;额度三级编号-->
+<!--               cs.CUSTOMER_NUM,   &#45;&#45;客户号-->
+<!--               cs.GUARANTEE_TYPE, &#45;&#45;担保方式-->
+<!--               cs.PLEDGE_TYPE,    &#45;&#45;担保物类型-->
+<!--               cs.PLEDGE_NAME,    &#45;&#45;担保物名称-->
+<!--               cs.CURRENCY_CD,    &#45;&#45;币种-->
+<!--               cs.EXCHANGE_RATE,  &#45;&#45;汇率-->
+<!--               cs.AMT_ASSES,      &#45;&#45;评估价值-->
+<!--               cs.AMT_ACTUAL,     &#45;&#45;权利价值-->
+<!--               cs.AMT_USED,       &#45;&#45;已用金额-->
+<!--               cs.AMT_AVI,        &#45;&#45;可用金额-->
+<!--               cs.PLEDGE_RATE,    &#45;&#45;抵质押率-->
+<!--               cs.PLEDGE_STATUS,  &#45;&#45;押品状态-->
+<!--               cs.TRAN_DATE,      &#45;&#45;交易日期-->
+<!--               cs.TRAN_SYSTEM,    &#45;&#45;经办系统-->
+<!--               cs.CREATE_TIME,    &#45;&#45;经办人-->
+<!--               cs.UPDATE_TIME,    &#45;&#45;经办机构-->
+<!--               cs.USER_NUM,       &#45;&#45;创建时间-->
+<!--               cs.ORG_NUM         &#45;&#45;修改时间-->
+<!--        from TB_CRD_SUMMARY s,-->
+<!--             TB_CRD_SUBCONTRACT_CON sc,-->
+<!--             TB_CRD_SUBCONTRACT_SURETY ss,-->
+<!--             TB_CRD_SURETY cs-->
+<!--        where s.SUMMARY_NUM = #{businessNum}-->
+<!--          and s.CONTRACT_NUM = sc.CONTRACT_NUM-->
+<!--          and sc.SUBCONTRACT_NUM = ss.SUBCONTRACT_NUM-->
+<!--          and ss.SURETY_NUM = cs.SURETY_NUM-->
+<!--          and cs.GUARANTEE_TYPE = s.MAIN_GUARANTEE_TYPE-->
+<!--    </select>-->
+
+
+    <!--查询全客户（单一客户）明细    -->
+    <select id="selectSingleCusDetailRptPage" resultType="org.git.modules.clm.rcm.vo.RcmFullCusDetailRptVO">
+        select cp.CUSTOMER_NUM,   --客户编号
+               cp.CUSTOMER_NAME,  --客户名称
+               cast(r.LOAN_EXP_BALANCE / #{queryVO.amtUnit} as decimal (24,2))                         as LOAN_EXP_BALANCE, --贷款余额
+               cast((r.LOAN_EXP_BALANCE - ch.LOAN_EXP_BALANCE) / #{queryVO.amtUnit} as decimal (24,2)) as CHANGE            --较上月变化
+        from TB_CRD_STATIS_CSM r
+        left join TB_CRD_STATIS_CSM_HS ch on r.CUSTOMER_NUM = ch.CUSTOMER_NUM and ch.YEAR = #{year} and ch.MONTH = #{lastMonth}
+        join TB_CSM_PARTY cp on r.CUSTOMER_NUM = cp.CUSTOMER_NUM
+--         join TB_CSM_MANAGE_TEAM mt on r.CUSTOMER_NUM = mt.CUSTOMER_NUM
+        where 1 = 1
+        -- 生效机构查询
+        <include refid="selectOrgNum"/>
+        -- 客户名称模糊查询
+        <if test="queryVO.customerName != null and queryVO.customerName != ''">
+            and exists (select 1
+            from TB_CSM_PARTY p1
+            where p1.CUSTOMER_NAME like CONCAT(CONCAT('%',#{queryVO.customerName}),'%')
+            and p1.CUSTOMER_NUM = r.CUSTOMER_NUM
+            )
+        </if>
+        -- 客户经理查询
+<!--        <if test="queryVO.userNum != null and queryVO.userNum != ''">-->
+<!--            and mt.USER_NUM = #{queryVO.userNum}-->
+<!--        </if>-->
+        -- 管护机构查询
+<!--        <if test="queryVO.manageOrgNum != null and queryVO.manageOrgNum != ''">-->
+<!--            and mt.ORG_NUM = #{queryVO.manageOrgNum}-->
+<!--        </if>-->
+        order by r.LOAN_EXP_BALANCE desc
+    </select>
+
+
+    <!--查询全客户（集团客户）明细   -->
+    <select id="selectGroupCusDetailRptPage" resultType="org.git.modules.clm.rcm.vo.RcmFullCusDetailRptVO">
+        select g.groupNum                                                                      as CUSTOMER_NUM,     --客户编号
+               g.groupName                                                                     as CUSTOMER_NAME,    --客户名称
+               cast(g.balanceTotal / #{queryVO.amtUnit} as decimal (24,2))                     as LOAN_EXP_BALANCE, --贷款余额
+               cast((g.balanceTotal - gh.balanceTotal) / #{queryVO.amtUnit} as decimal (24,2)) as CHANGE            --较上月变化
+        from (select a1.groupNum,                              -- 集团客户
+                     a1.groupName,                             -- 集团名称
+                     sum(LOAN_EXP_BALANCE) as balanceTotal     -- 集团批复集团贷款敞口余额
+              from (select gm.CUSTOMER_NUM  as groupNum,
+                           r.LOAN_EXP_BALANCE,
+                           cp.CUSTOMER_NAME as groupName
+                    from TB_CRD_STATIS_CSM r,
+                         TB_CSM_GROUP_MEMBER gm,
+                         TB_CSM_PARTY cp
+                    where r.CUSTOMER_NUM = gm.MEMBER_CUSTOMER_NUM
+                      and cp.CUSTOMER_NUM = gm.CUSTOMER_NUM) a1
+              group by a1.groupNum, a1.groupName) g
+        left join (select a1.groupNum,                              -- 集团客户
+                          a1.groupName,                             -- 集团名称
+                          sum(LOAN_EXP_BALANCE) as balanceTotal,    -- 集团贷款敞口余额
+                          a1.YEAR,
+                          a1.MONTH
+                   from (select gm.CUSTOMER_NUM  as groupNum,
+                                r.LOAN_EXP_BALANCE,
+                                cp.CUSTOMER_NAME as groupName,
+                                r.YEAR,
+                                r.MONTH
+                         from TB_CRD_STATIS_CSM_HS r,
+                              TB_CSM_GROUP_MEMBER gm,
+                              TB_CSM_PARTY cp
+                         where r.CUSTOMER_NUM = gm.MEMBER_CUSTOMER_NUM
+                         and cp.CUSTOMER_NUM = gm.CUSTOMER_NUM) a1
+                   group by a1.groupNum, a1.groupName, a1.YEAR, a1.MONTH) gh
+        on g.groupNum = gh.groupNum and gh.YEAR = #{year} and gh.MONTH = #{lastMonth}
+--         join TB_CSM_MANAGE_TEAM mt on mt.CUSTOMER_NUM = g.groupNum
+        join TB_CRD_STATIS_CSM r on r.CUSTOMER_NUM = g.groupNum
+        where 1 = 1
+        -- 生效机构查询
+        <include refid="selectOrgNum"/>
+        -- 客户名称模糊查询
+        <if test="queryVO.customerName != null and queryVO.customerName != ''">
+            and exists (select 1
+            from TB_CSM_PARTY p1
+            where p1.CUSTOMER_NAME like CONCAT(CONCAT('%',#{queryVO.customerName}),'%')
+            )
+        </if>
+        -- 客户经理查询
+<!--        <if test="queryVO.userNum != null and queryVO.userNum != ''">-->
+<!--            and mt.USER_NUM = #{queryVO.userNum}-->
+<!--        </if>-->
+        -- 管护机构查询
+<!--        <if test="queryVO.manageOrgNum != null and queryVO.manageOrgNum != ''">-->
+<!--            and mt.ORG_NUM = #{queryVO.manageOrgNum}-->
+<!--        </if>-->
+        order by LOAN_EXP_BALANCE desc
+    </select>
+
+
+
+</mapper>

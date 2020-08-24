@@ -1,0 +1,148 @@
+#服务器配置
+server:
+  port: 8080
+  undertow:
+    # 设置IO线程数, 它主要执行非阻塞的任务,它们会负责多个连接, 默认设置每个CPU核心一个线程
+    io-threads: 16
+    # 阻塞任务线程池, 当执行类似servlet请求阻塞操作, undertow会从这个线程池中取得线程,它的值设置取决于系统的负载
+    worker-threads: 400
+    # 以下的配置会影响buffer,这些buffer会用于服务器连接的IO操作,有点类似netty的池化内存管理
+    buffer-size: 1024
+    # 是否分配的直接内存
+    direct-buffers: true
+
+spring:
+  datasource:
+    #driver-class-name: com.ibm.db2.jcc.DB2Driver
+    #driver-class-name: com.mysql.cj.jdbc.Driver
+    #driver-class-name: org.postgresql.Driver
+    driver-class-name: oracle.jdbc.OracleDriver
+    druid:
+      # DB2校验
+      #validation-query: select 1 from sysibm.sysdummy1
+      # MySql、PostgreSQL校验
+      #validation-query: select 1
+      # Oracle校验
+      validation-query: select 1 from dual
+      validation-query-timeout: 2000
+      initial-size: 5
+      max-active: 20
+      min-idle: 5
+      max-wait: 60000
+      test-on-borrow: false
+      test-on-return: false
+      test-while-idle: true
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      stat-view-servlet:
+        enabled: true
+        login-username: admin
+        login-password: 1qaz@WSX
+      web-stat-filter:
+        enabled: true
+        url-pattern: /*
+        exclusions: '*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*'
+        session-stat-enable: true
+        session-stat-max-count: 10
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 200MB
+
+  #  热部署
+  devtools:
+    restart:
+      enabled: true  #设置开启热部署
+  freemarker:
+    cache: false    #页面不加载缓存，修改即时生效
+
+# mybatis
+mybatis-plus:
+  mapper-locations: classpath:org/springchain/**/mapper/*Mapper.xml
+  #实体扫描，多个package用逗号或者分号分隔
+  typeAliasesPackage: org.git.**.entity
+  #typeEnumsPackage: org.git.dashboard.entity.enums
+  global-config:
+    # 关闭MP3.0自带的banner
+    banner: false
+    db-config:
+      #主键类型  0:"数据库ID自增", 1:"不操作", 2:"用户输入ID",3:"数字型snowflake", 4:"全局唯一ID UUID", 5:"字符串型snowflake";
+      id-type: id_worker
+      #字段策略
+      insert-strategy: not_null
+      update-strategy: not_null
+      select-strategy: not_null
+      #驼峰下划线转换
+      table-underline: true
+      # 逻辑删除配置
+      # 逻辑删除全局值（1表示已删除，这也是Mybatis Plus的默认配置）
+      logic-delete-value: 1
+      # 逻辑未删除全局值（0表示未删除，这也是Mybatis Plus的默认配置）
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+
+#swagger公共信息
+swagger:
+  title: 接口文档系统
+  description: 接口文档系统
+  version: 2.0.0
+  license: Powered By Global InfoTech
+  license-url: http://www.git.com.cn
+  terms-of-service-url: http://www.git.com.cn
+  contact:
+    name: caohaijie
+    email: caohaijie@git.com.cn
+    url: http://www.git.com.cn
+  base-packages:
+    - org.git
+
+#flowable配置
+flowable:
+  activity-font-name: \u5B8B\u4F53
+  label-font-name: \u5B8B\u4F53
+  annotation-font-name: \u5B8B\u4F53
+  check-process-definitions: false
+
+#oss默认配置
+oss:
+  enable: false
+  name: qiniu
+  tenant-mode: true
+  endpoint: prt1thnw3.bkt.clouddn.com
+  access-key: N_Loh1ngBqcJovwiAJqR91Ifj2vgOWHOf8AwBA_h
+  secret-key: AuzuA1KHAbkIndCU0dB3Zfii2O3crHNODDmpxHRS
+  bucket-name: chain
+  #clm配置
+clm:
+  # 是否开启用户单一登录
+  login-single: false
+  # 用户登录失效时长（秒）
+  login-expire: 1800
+  drools:
+    scanpackage: org.git.modules.drools.entity
+#chain配置
+chain:
+  xss:
+    skip-url:
+      - /weixin
+      - /notice/submit
+      - /git-system/rules/submit
+  secure:
+    skip-url:
+      - /chain-test/**
+    client:
+      - client-id: sword
+        path-patterns:
+          - /chain-sword/**
+      - client-id: saber
+        path-patterns:
+          - /chain-saber/**
+  tenant:
+    column: tenant_id
+    tables:
+      - chain_notice
+
+

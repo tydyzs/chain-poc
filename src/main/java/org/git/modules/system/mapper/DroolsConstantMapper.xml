@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.system.mapper.DroolsConstantMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="droolsConstantResultMap" type="org.git.modules.system.entity.DroolsConstant">
+        <result column="id" property="id"/>
+        <result column="rule_id" property="ruleId"/>
+        <result column="const_code" property="constCode"/>
+        <result column="const_name" property="constName"/>
+        <result column="const_type" property="constType"/>
+        <result column="const_value" property="constValue"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+
+</mapper>

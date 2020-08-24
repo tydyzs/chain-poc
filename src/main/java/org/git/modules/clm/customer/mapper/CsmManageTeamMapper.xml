@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.customer.mapper.CsmManageTeamMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="csmManageTeamResultMap" type="org.git.modules.clm.customer.entity.CsmManageTeam">
+        <id column="UUID" property="uuid"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="USER_PLACING_CD" property="userPlacingCd"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CREATE_TIME" property="createTime"/>
+    </resultMap>
+
+
+    <select id="selectCsmManageTeamPage" resultMap="csmManageTeamResultMap">
+        select * from TB_CSM_MANAGE_TEAM where is_deleted = 0
+    </select>
+
+    <select id="selectCsmManageTeamPageByCusNum" resultType="org.git.modules.clm.customer.vo.CsmManageTeamVO">
+        select
+            t1.ORG_NUM, --机构号
+            t1.USER_NUM, --客户经理号
+            t1.USER_PLACING_CD, --权限类型
+            t2.REAL_NAME, --客户经理姓名
+            t3.DEPT_NAME, --机构名
+            t3.AERA_CODE --机构地区
+        from
+            TB_CSM_MANAGE_TEAM t1
+        left join
+            CHAIN_USER t2
+        on
+            t1.USER_NUM = t2.ACCOUNT
+        left join
+            CHAIN_DEPT t3
+        on
+            t1.ORG_NUM = t3.ID
+        where
+            t1.CUSTOMER_NUM = #{customerNum}
+    </select>
+</mapper>

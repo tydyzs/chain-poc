@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.demo.mapper.DemoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="demoResultMap" type="org.git.modules.demo.entity.Demo">
+        <id column="DEMO_ID" property="demoId"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="SEX" property="sex"/>
+        <result column="CERT_NO" property="certNo"/>
+        <result column="CERT_TYPE" property="certType"/>
+        <result column="ADDRESS" property="address"/>
+        <result column="PHONE_NO" property="phoneNo"/>
+        <result column="WORK_YEAR" property="workYear"/>
+    </resultMap>
+
+
+    <select id="selectDemoPage" resultMap="demoResultMap">
+        select * from TB_SYS_DEMO where is_deleted = 0
+    </select>
+
+</mapper>

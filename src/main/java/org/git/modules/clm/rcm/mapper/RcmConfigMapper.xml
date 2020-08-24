@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmConfigMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="rcmConfigurationInfoResultMap" type="org.git.modules.clm.rcm.entity.RcmConfig">
+        <id column="QUOTA_NUM" jdbcType="VARCHAR" property="quotaNum" />
+        <result column="QUOTA_NAME" jdbcType="VARCHAR" property="quotaName" />
+        <result column="QUOTA_INDEX_NUM" jdbcType="VARCHAR" property="quotaIndexNum" />
+        <result column="USE_ORG_NUM" jdbcType="VARCHAR" property="useOrgNum" />
+        <result column="QUOTA_USED_AMT" jdbcType="DECIMAL" property="quotaUsedAmt" />
+        <result column="QUOTA_FREE_AMT" jdbcType="DECIMAL" property="quotaFreeAmt" />
+        <result column="QUOTA_USED_RATIO" jdbcType="DECIMAL" property="quotaUsedRatio" />
+        <result column="QUOTA_FREE_RATIO" jdbcType="DECIMAL" property="quotaFreeRatio" />
+        <result column="QUOTA_TOTAL_SUM" jdbcType="DECIMAL" property="quotaTotalSum" />
+        <result column="QUOTA_TOTAL_TYPE" jdbcType="VARCHAR" property="quotaTotalType" />
+        <result column="START_DATE" jdbcType="VARCHAR" property="startDate" />
+        <result column="INVALID_DATE" jdbcType="VARCHAR" property="invalidDate" />
+        <result column="QUOTA_STATE" jdbcType="VARCHAR" property="quotaState" />
+        <result column="HIS_FREQUENCY_A" jdbcType="DECIMAL" property="hisFrequencyA" />
+        <result column="HIS_FREQUENCY_B" jdbcType="DECIMAL" property="hisFrequencyB" />
+        <result column="HIS_FREQUENCY_C" jdbcType="DECIMAL" property="hisFrequencyC" />
+        <result column="HIS_FREQUENCY" jdbcType="DECIMAL" property="hisFrequency" />
+        <result column="EXPLAIN_INFO" jdbcType="VARCHAR" property="explainInfo" />
+        <result column="USER_NUM" jdbcType="VARCHAR" property="userNum" />
+        <result column="ORG_NUM" jdbcType="VARCHAR" property="orgNum" />
+        <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="INSPECT_USER_NUM" jdbcType="VARCHAR" property="inspectUserNum" />
+        <result column="INSPECT_ORG_NUM" jdbcType="VARCHAR" property="inspectOrgNum" />
+        <result column="INSPECT_TIME" jdbcType="TIMESTAMP" property="inspectTime" />
+        <result column="APPLY_STATE" jdbcType="VARCHAR" property="applyState" />
+    </resultMap>
+
+
+    <select id="selectRcmConfigPage" resultMap="rcmConfigurationInfoResultMap">
+        select * from TB_RCM_CONFIG
+    </select>
+
+    <update id="updateRcmConfigNameAndState">
+        update TB_RCM_CONFIG
+            set
+                quota_state  = #{rcmConfigurationInfo.quotaState},
+                quota_name   = #{rcmConfigurationInfo.quotaName},
+                USER_NUM = #{rcmConfigurationInfo.userNum},
+                ORG_NUM  = #{rcmConfigurationInfo.orgNum},
+                UPDATE_TIME  = #{rcmConfigurationInfo.updateTime}
+            where quota_num  = #{rcmConfigurationInfo.quotaNum}
+    </update>
+
+    <select id="countInfo" resultType="java.lang.Integer">
+        select count(1) from TB_RCM_CONFIG
+        where 1=1
+        <if test="netCapitalNum!=null">
+            and use_org_num = (select use_org_num from tb_rcm_net_capital where net_capital_num = #{netCapitalNum})
+        </if>
+        <if test="quotaState!=null">
+           and  quota_state = #{quotaState}
+        </if>
+    </select>
+
+</mapper>

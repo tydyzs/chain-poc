@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.chart.mapper.LedgerChartMapper">
+
+    <!--查询同业额度视图基本信息-->
+    <select id="ledgerDetail" parameterType="org.git.modules.clm.chart.vo.CrdQueryVO"
+            resultType="org.git.modules.clm.chart.vo.CrdQueryVO">
+        select
+            a.*,
+            b.cert_type,
+            b.cert_num,
+            c.customer_name
+        from
+            tb_crd_sum a,
+            TB_CSM_CERT_INFO b,
+            TB_CSM_PARTY c,
+            CHAIN_DEPT d
+        where   a.customer_num=b.customer_num
+        and     a.customer_num=c.customer_num
+        and     a.ORG_NUM = d.ID
+        and     a.CUSTOMER_NUM = #{customerNum}
+        and     d.ANCESTORS like CONCAT(CONCAT('%', #{orgNum}), '%')
+        and     c.CUSTOMER_TYPE = #{customerType}
+    </select>
+
+    <!--额度结构 查询机构为省联社的明细-->
+    <select id="queryLedgerDeatilByOrgType"  parameterType="org.git.modules.clm.chart.vo.CrdQueryVO"
+            resultType="org.git.modules.clm.chart.vo.CrdQueryVO">
+        select
+           a.*,
+           b.crd_product_num as crd_product_num,       -- 额度产品编号
+           b.crd_product_name       -- 额度产品名称
+        from tb_crd_detail a
+        left join  tb_par_crd b on  a.crd_detail_prd=b.crd_product_num
+        left join  chain_dept c  on  a.org_num=c.ID and c.dept_level='1'
+        where   a.CUSTOMER_NUM=#{customerNum}
+         and    a.CRD_GRANT_ORG_NUM =#{crdGrantOrgNum}
+     </select>
+
+    <!--额度结构 查询机构为成员行的明细-->
+    <select id="queryLedgerDeatilByOrgTypeThree"  resultType="org.git.modules.clm.chart.vo.CrdQueryVO">
+        select
+           a.*,
+           b.crd_product_name       -- 额度产品名称
+        from
+             tb_crd_detail a,
+             tb_par_crd b,
+             chain_dept c
+        where  a.crd_detail_prd=b.crd_product_num
+        and    a.org_num=c.ID and c.dept_level='3'
+        and    a.CUSTOMER_NUM=#{customerNum}
+        and    a.CRD_GRANT_ORG_NUM =#{crdGrantOrgNum}
+    </select>
+</mapper>

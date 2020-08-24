@@ -1,0 +1,26 @@
+
+1.登入：
+    1.AuthController.java   ---	@PostMapping("/oauth/token")
+    2.postman测试：
+      url：http://localhost:9528/dev-api/git-auth/oauth/token?account=admin&password=123&grant_type=password&scope=all&type=account&deptId=01000
+      headers:  Authorization/Basic c2FiZXI6c2FiZXJfc2VjcmV0
+      （说明： c2FiZXI6c2FiZXJfc2VjcmV0 为客户端表查询出来的值并经过base64加密的值：    select client_secret from chain_client where client_id='saber'）
+    3.登入会返回token：
+        {
+          "tenant_id": "000000",
+          "account": "admin",
+          "user_name": "admin",
+          "nick_name": "管理员",
+          "role_name": "administrator",
+          "avatar": "https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png",
+          "access_token": "eyJ0eXAiOiJKc29uV2ViVG9rZW4iLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJpc3N1c2VyIiwiYXVkIjoiYXVkaWVuY2UiLCJ0ZW5hbnRfaWQiOiIwMDAwMDAiLCJyb2xlX25hbWUiOiJhZG1pbmlzdHJhdG9yIiwidXNlcl9pZCI6IjExMjM1OTg4MjE3Mzg2NzUyMDEiLCJyb2xlX2lkIjoiMTEyMzU5ODgxNjczODY3NTIwMSIsInVzZXJfbmFtZSI6ImFkbWluIiwibmlja19uYW1lIjoi566h55CG5ZGYIiwidG9rZW5fdHlwZSI6ImFjY2Vzc190b2tlbiIsImRlcHRfaWQiOiIwMTAwMCIsImFjY291bnQiOiJhZG1pbiIsImNsaWVudF9pZCI6InNhYmVyIiwiZXhwIjoxNTk2NzI5ODgyLCJuYmYiOjE1OTY3MjYyODJ9.ylKRtMGZ1e4NunQhVvBmkwGzsDjAlJmV4eWQe3KypDU",
+          "refresh_token": "eyJ0eXAiOiJKc29uV2ViVG9rZW4iLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJpc3N1c2VyIiwiYXVkIjoiYXVkaWVuY2UiLCJ1c2VyX2lkIjoiMTEyMzU5ODgyMTczODY3NTIwMSIsInRva2VuX3R5cGUiOiJyZWZyZXNoX3Rva2VuIiwiY2xpZW50X2lkIjoic2FiZXIiLCJleHAiOjE1OTczMzEwODIsIm5iZiI6MTU5NjcyNjI4Mn0.Mvvqfc3LC4v1lcb_7vf0jD2m70mJO19kbsNWCcPpq2E",
+          "token_type": "bearer",
+          "expires_in": 3600,
+          "license": "powered by chain"
+        }
+     4.系统业务请求添加两个headers：
+        1.Authorization/Basic c2FiZXI6c2FiZXJfc2VjcmV0
+        2.Chain-Auth/'bearer '+登入返回的access_token
+            例如（bearer后面需空格）：
+            Chain-Auth/bearer eyJ0eXAiOiJKc29uV2ViVG9rZW4iLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJpc3N1c2VyIiwiYXVkIjoiYXVkaWVuY2UiLCJ0ZW5hbnRfaWQiOiIwMDAwMDAiLCJyb2xlX25hbWUiOiJhZG1pbmlzdHJhdG9yIiwidXNlcl9pZCI6IjExMjM1OTg4MjE3Mzg2NzUyMDEiLCJyb2xlX2lkIjoiMTEyMzU5ODgxNjczODY3NTIwMSIsInVzZXJfbmFtZSI6ImFkbWluIiwibmlja19uYW1lIjoi566h55CG5ZGYIiwidG9rZW5fdHlwZSI6ImFjY2Vzc190b2tlbiIsImRlcHRfaWQiOiIwMTAwMCIsImFjY291bnQiOiJhZG1pbiIsImNsaWVudF9pZCI6InNhYmVyIiwiZXhwIjoxNTk2NzI5ODgyLCJuYmYiOjE1OTY3MjYyODJ9.ylKRtMGZ1e4NunQhVvBmkwGzsDjAlJmV4eWQe3KypDU

@@ -1,0 +1,66 @@
+#数据源配置
+spring:
+  redis:
+    ##redis 单机环境配置
+    host: 106.12.241.109
+    port: 18679
+    password: redis@2019
+    database: 0
+    ssl: false
+    ##redis 集群环境配置
+    #cluster:
+    #  nodes: 127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003
+    #  commandTimeout: 5000
+  datasource:
+    # DB2
+    url: jdbc:db2://106.12.241.109:50000/clmdb:currentSchema=CLM;currentFunctionPath=CLM;
+    username: db2inst1
+    password: dbserver
+
+  activemq:
+    #ActiveMQ artemis config
+    enable: true
+    broker-url: tcp://localhost:61616
+    user: admin
+    password: admin
+    #连接池最大连接数
+    max-connections: 5
+    #空闲的连接过期时间，默认为30秒
+    idle-timeout: 30000
+  ibmmq:
+    #IBM MQ config
+    enable: false
+    requester:
+      host: 10.0.123.80
+      port: 40003
+      manager: MQ_Transaction_Server
+      channel: SVRCONN_GW_IN
+      send-queue: IBM.SERVICE.TYSX.REQUESTER.IN
+      receive-queue: IBM.SERVICE.TYSX.REQUESTER.OUT
+    provider[0]:
+      host: 10.0.114.119
+      port: 40003
+      manager: MQ_Transaction_Server
+      channel: SVRCONN_GW_IN
+      send-queue: IBM.SERVICE.TYSX.PROVIDER.OUT
+      receive-queue: IBM.SERVICE.TYSX.PROVIDER.IN
+    provider[1]:
+      host: 10.0.114.181
+      port: 40003
+      manager: MQ_Transaction_Server
+      channel: SVRCONN_GW_IN
+      send-queue: IBM.SERVICE.TYSX.PROVIDER.OUT
+      receive-queue: IBM.SERVICE.TYSX.PROVIDER.IN
+
+#chain配置
+chainba:
+  prop:
+    upload-domain: http://localhost:8888
+    remote-mode: true
+    remote-path: /usr/share/nginx/html
+    remote-path-iis: D://iis/html
+    log-mode: true
+  document:
+    #windows(本地测试用)
+    upload-path-windows: d:/document/tysx/
+    upload-path-linux: /data/document/tysx/

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.system.mapper.DroolsRulesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="droolsRulesResultMap" type="org.git.modules.system.entity.DroolsRules">
+        <result column="id" property="id"/>
+        <result column="code" property="code"/>
+        <result column="name" property="name"/>
+        <result column="rules" property="rules"/>
+        <result column="biz_class_path" property="bizClassPath"/>
+        <result column="biz_class_name" property="bizClassName"/>
+        <result column="biz_name" property="bizName"/>
+        <result column="biz_explain" property="bizExplain"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+
+
+
+
+
+
+
+    <select id="getDroolsRulesPage" resultMap="droolsRulesResultMap">
+        select * from chain_drools_rules a where a.is_deleted = 0
+            <if test="rules.name != null and rules.name != ''">
+                 and a.name like CONCAT(CONCAT('%',#{dept.fullName}),'%')
+            </if>
+    </select>
+
+
+</mapper>

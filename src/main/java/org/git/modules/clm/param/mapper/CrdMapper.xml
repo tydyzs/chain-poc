@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.param.mapper.CrdMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="crdResultMap" type="org.git.modules.clm.param.entity.Crd">
+        <id column="crd_product_num" property="crdProductNum"/>
+        <result column="CRD_PRODUCT_NAME" property="crdProductName"/>
+        <result column="SUPER_CRD_Num" property="superCrdNum"/>
+        <result column="SUPER_CRD_NAME" property="superCrdName"/>
+        <result column="SUPER_LIST_NUM" property="superListNum"/>
+        <result column="CRD_LOWER_LIMIT" property="crdLowerLimit"/>
+        <result column="CRD_UPPER_LIMIT" property="crdUpperLimit"/>
+        <result column="OPEN_LOWER_LIMIT" property="openLowerLimit"/>
+        <result column="OPEN_UPPER_LIMIT" property="openUpperLimit"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="CRD_SYS_STATUS" property="crdSysStatus"/>
+        <result column="crd_DESCR" property="crdDescr"/>
+        <result column="crd_level" property="crdLevel"/>
+        <result column="user_num" property="userNum"/>
+        <result column="org_num" property="orgNum"/>
+        <result column="update_user_num" property="updateUserNum"/>
+        <result column="update_org_num" property="updateOrgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="RESERVED_FIELD1" property="reservedField1"/>
+        <result column="RESERVED_FIELD2" property="reservedField2"/>
+        <result column="RESERVED_FIELD3" property="reservedField3"/>
+        <result column="RESERVED_FIELD4" property="reservedField4"/>
+        <result column="RESERVED_FIELD5" property="reservedField5"/>
+    </resultMap>
+
+
+    <select id="selectCrdPage" resultMap="crdResultMap">
+        select * from tb_par_crd where is_deleted = 0
+    </select>
+    <delete id="deletecrd" >
+        delete from TB_PAR_CRD where
+        crd_product_num=#{crd.crdProductNum} OR
+        super_list_num LIKE #{crd.superListNum}
+    </delete>
+    <select id="selectCrdProduct" resultType="int">
+         select count(0) from tb_par_crd t1,tb_par_crd_product t2,TB_CRD_APPROVE t3
+        where t1.crd_product_num=t2.crd_product_num and t2.PRODUCT_NUM=t3.PRODUCT_NUM
+        and (t1.crd_product_num=#{crdProductNum} or t1.super_crd_num=#{crdProductNum})
+    </select>
+    <select id="getCrdMaxId" resultType="string">
+        select max(CRD_PRODUCT_NUM) from tb_par_crd where SUPER_CRD_NUM=#{crdId}
+    </select>
+
+    <select id="getCrdByName" resultType="org.git.modules.clm.param.entity.Crd">
+        select * from tb_par_crd where crd_product_name=#{crdProductName}
+    </select>
+  <!--  <delete id="deleteCrdProduct" resultType="int">
+        delete from
+    </delete>-->
+
+</mapper>

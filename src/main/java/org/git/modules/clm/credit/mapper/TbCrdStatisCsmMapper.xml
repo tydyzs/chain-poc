@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.TbCrdStatisCsmMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="tbCrdStatisCsmResultMap" type="org.git.modules.clm.credit.entity.TbCrdStatisCsm">
+        <id column="STATIS_ID" property="statisId"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="APPROVE_COUNT" property="approveCount"/>
+        <result column="APPROVE_EXP_AMOUNT" property="approveExpAmount"/>
+        <result column="CREDIT_EXP_BALANCE" property="creditExpBalance"/>
+        <result column="LOAN_EXP_BALANCE" property="loanExpBalance"/>
+        <result column="LIMIT_CREDIT" property="limitCredit"/>
+        <result column="LIMIT_AVI" property="limitAvi"/>
+        <result column="LIMIT_USED" property="limitUsed"/>
+        <result column="EXP_USED" property="expUsed"/>
+        <result column="EXP_AVI" property="expAvi"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectTbCrdStatisCsmPage" resultMap="tbCrdStatisCsmResultMap">
+        select * from TB_CRD_STATIS_CSM where is_deleted = 0
+    </select>
+
+    <!--额度视图 集团客户360视图 成员结构-->
+    <select id="findGroupMemberDetail" resultType="org.git.modules.clm.credit.vo.TbCrdStatisCsmVO">
+              select
+                a.*
+                from
+                    tb_crd_statis_csm a,
+                      chain_dept as e
+                where  a.ORG_NUM=e.ID
+                and  a.CUSTOMER_NUM=#{customerNum}
+                and a.ORG_NUM=#{orgNum}
+    </select>
+</mapper>

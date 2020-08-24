@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.TbCrdSubcontractMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="tbCrdSubcontractResultMap" type="org.git.modules.clm.credit.entity.TbCrdSubcontract">
+        <id column="SUBCONTRACT_NUM" property="subcontractNum"/>
+        <result column="CON_CUSTOMER_NUM" property="conCustomerNum"/>
+        <result column="SUBCONTRACT_TYPE" property="subcontractType"/>
+        <result column="IS_TOP" property="isTop"/>
+        <result column="IS_GROUP" property="isGroup"/>
+        <result column="SUBCONTRACT_AMT" property="subcontractAmt"/>
+        <result column="SURETY_CUSTOMER_NUM" property="suretyCustomerNum"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="EXCHANGE_RETE" property="exchangeRete"/>
+        <result column="BEGIN_DATE" property="beginDate"/>
+        <result column="END_DATE" property="endDate"/>
+        <result column="SUBCONTRACT_STAUS" property="subcontractStaus"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectTbCrdSubcontractPage" resultMap="tbCrdSubcontractResultMap">
+        select * from TB_CRD_SUBCONTRACT where is_deleted = 0
+    </select>
+
+    <select id="selectTbCrdSubcontractList" resultType="org.git.modules.clm.credit.vo.TbCrdSubcontractVO">
+        select
+            t1.CONTRACT_NUM,t2.SURETY_AMT,t3.*,t5.PLEDGE_TYPE
+        from
+            TB_CRD_CONTRACT t1,tb_crd_subcontract_con t2,
+            TB_CRD_SUBCONTRACT t3,TB_CRD_SUBCONTRACT_SURETY t4,TB_CRD_SURETY t5
+        where
+            t1.CONTRACT_NUM = t2.CONTRACT_NUM
+        and
+            t2.SUBCONTRACT_NUM = t3.SUBCONTRACT_NUM
+        and
+            t3.SUBCONTRACT_NUM = t4.SUBCONTRACT_NUM
+        and
+            t4.SURETY_NUM = t5.SURETY_NUM
+        and
+            t1.CUSTOMER_NUM = #{customerNum}
+        and
+            t1.ORG_NUM = #{orgNum}
+    </select>
+
+    <!--查询合同详情中担保合同信息-->
+    <select id="queryCrdSubcontractPage" resultType="org.git.modules.clm.credit.vo.TbCrdSubcontractVO">
+        select
+            a.subcontract_num,               -- 担保合同编号
+            a.subcontract_type,              -- 担保合同类型
+            a.is_top ,                       -- 是否最高额
+            a.currency_cd ,                  -- 币种
+            a.subcontract_amt,               -- 担保合同金额
+            d.amt_used,                      -- 已用金额
+            d.amt_avi,                       -- 可用金额
+            b.surety_amt,                    -- 本次担保金额
+            a.begin_date,                    -- 起始日
+            a.end_date,                      -- 到期日
+            a.subcontract_staus              --担保合同状态
+        from
+               tb_crd_subcontract a,
+               tb_crd_subcontract_con b,
+               tb_crd_subcontract_surety c,
+               tb_crd_surety d
+        where   a.subcontract_num=b.subcontract_num
+        and  b.SUBCONTRACT_NUM =c.SUBCONTRACT_NUM
+        and  c.SURETY_NUM = d.SURETY_NUM
+        and  b.CONTRACT_NUM=#{contractNum}
+    </select>
+</mapper>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.flowable.org/processdef">
+  <process id="common" name="通用流程" isExecutable="true">
+    <documentation>通用流程</documentation>
+    <startEvent id="start" name="开始" flowable:initiator="startUser"></startEvent>
+    <sequenceFlow id="flow1" sourceRef="start" targetRef="khjlTask"></sequenceFlow>
+    <userTask id="khjlTask" name="客户经理" default="sid-4D18998D-1638-4943-BEC4-423113342D3E" flowable:assignee="${startUser}">
+      <extensionElements>
+        <modeler:initiator-can-complete xmlns:modeler="http://flowable.org/modeler"><![CDATA[false]]></modeler:initiator-can-complete>
+      </extensionElements>
+    </userTask>
+    <userTask id="zhhzTask" name="支行行长" default="flow4" flowable:assignee="${taskUser}">
+      <extensionElements>
+        <modeler:initiator-can-complete xmlns:modeler="http://flowable.org/modeler"><![CDATA[false]]></modeler:initiator-can-complete>
+      </extensionElements>
+    </userTask>
+    <exclusiveGateway id="judgeTask" name="判断金额"></exclusiveGateway>
+    <userTask id="fhfkTask" name="分行风控" default="managerPassFlow" flowable:assignee="${taskUser}">
+      <extensionElements>
+        <modeler:initiator-can-complete xmlns:modeler="http://flowable.org/modeler"><![CDATA[false]]></modeler:initiator-can-complete>
+      </extensionElements>
+    </userTask>
+    <userTask id="zhfkTask" name="总行风控" default="bossPassFlow" flowable:assignee="${taskUser}">
+      <extensionElements>
+        <modeler:initiator-can-complete xmlns:modeler="http://flowable.org/modeler"><![CDATA[false]]></modeler:initiator-can-complete>
+      </extensionElements>
+    </userTask>
+    <endEvent id="end" name="结束"></endEvent>
+    <sequenceFlow id="managerNotPassFlow" name="驳回" sourceRef="fhfkTask" targetRef="khjlTask">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!pass}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="bossNotPassFlow" name="驳回" sourceRef="zhfkTask" targetRef="khjlTask">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!pass}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-4D18998D-1638-4943-BEC4-423113342D3E" sourceRef="khjlTask" targetRef="zhhzTask"></sequenceFlow>
+    <sequenceFlow id="back1" name="驳回" sourceRef="zhhzTask" targetRef="khjlTask">
+      <documentation>驳回</documentation>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${!pass}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow4" name="通过" sourceRef="zhhzTask" targetRef="judgeTask">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${pass}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="bossPassFlow" name="通过" sourceRef="zhfkTask" targetRef="end">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${pass}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="managerPassFlow" name="通过" sourceRef="fhfkTask" targetRef="end">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${pass}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="judgeMore" name="大于10万元" sourceRef="judgeTask" targetRef="zhfkTask">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${amount > 100000}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="judgeLess" name="小于10万元" sourceRef="judgeTask" targetRef="fhfkTask">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${amount <= 100000}]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_common">
+    <bpmndi:BPMNPlane bpmnElement="common" id="BPMNPlane_common">
+      <bpmndi:BPMNShape bpmnElement="start" id="BPMNShape_start">
+        <omgdc:Bounds height="30.0" width="30.0" x="0.0" y="175.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="khjlTask" id="BPMNShape_khjlTask">
+        <omgdc:Bounds height="80.0" width="100.0" x="120.0" y="150.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="zhhzTask" id="BPMNShape_zhhzTask">
+        <omgdc:Bounds height="80.0" width="100.0" x="345.0" y="150.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="judgeTask" id="BPMNShape_judgeTask">
+        <omgdc:Bounds height="40.0" width="40.0" x="540.0" y="170.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="fhfkTask" id="BPMNShape_fhfkTask">
+        <omgdc:Bounds height="80.0" width="100.0" x="510.0" y="0.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="zhfkTask" id="BPMNShape_zhfkTask">
+        <omgdc:Bounds height="80.0" width="100.0" x="510.0" y="300.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="end" id="BPMNShape_end">
+        <omgdc:Bounds height="28.0" width="28.0" x="810.0" y="176.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="29.94999923927441" y="190.0"></omgdi:waypoint>
+        <omgdi:waypoint x="120.0" y="190.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="judgeLess" id="BPMNEdge_judgeLess">
+        <omgdi:waypoint x="560.0" y="170.0"></omgdi:waypoint>
+        <omgdi:waypoint x="560.0" y="79.95"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="444.95000000000005" y="190.0"></omgdi:waypoint>
+        <omgdi:waypoint x="540.0" y="190.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="back1" id="BPMNEdge_back1">
+        <omgdi:waypoint x="395.0" y="150.0"></omgdi:waypoint>
+        <omgdi:waypoint x="395.0" y="98.0"></omgdi:waypoint>
+        <omgdi:waypoint x="170.0" y="98.0"></omgdi:waypoint>
+        <omgdi:waypoint x="170.0" y="150.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bossPassFlow" id="BPMNEdge_bossPassFlow">
+        <omgdi:waypoint x="609.95" y="311.59090909090907"></omgdi:waypoint>
+        <omgdi:waypoint x="811.8255027761353" y="196.89262322548802"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-4D18998D-1638-4943-BEC4-423113342D3E" id="BPMNEdge_sid-4D18998D-1638-4943-BEC4-423113342D3E">
+        <omgdi:waypoint x="219.94999999983776" y="190.0"></omgdi:waypoint>
+        <omgdi:waypoint x="344.9999999998968" y="190.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="judgeMore" id="BPMNEdge_judgeMore">
+        <omgdi:waypoint x="560.0" y="209.94335443037977"></omgdi:waypoint>
+        <omgdi:waypoint x="560.0" y="300.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="managerPassFlow" id="BPMNEdge_managerPassFlow">
+        <omgdi:waypoint x="609.95" y="68.38068181818184"></omgdi:waypoint>
+        <omgdi:waypoint x="811.8166541468121" y="183.08267285970084"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bossNotPassFlow" id="BPMNEdge_bossNotPassFlow">
+        <omgdi:waypoint x="510.0" y="340.0"></omgdi:waypoint>
+        <omgdi:waypoint x="170.0" y="340.0"></omgdi:waypoint>
+        <omgdi:waypoint x="170.0" y="229.95000000000002"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="managerNotPassFlow" id="BPMNEdge_managerNotPassFlow">
+        <omgdi:waypoint x="510.0" y="40.0"></omgdi:waypoint>
+        <omgdi:waypoint x="170.0" y="40.0"></omgdi:waypoint>
+        <omgdi:waypoint x="170.0" y="150.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.TbCrdSubcontractSuretyMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="tbCrdSubcontractSuretyResultMap" type="org.git.modules.clm.credit.entity.TbCrdSubcontractSurety">
+        <id column="RELATION_ID" property="relationId"/>
+        <result column="RELATION_ID" property="relationId"/>
+        <result column="SUBCONTRACT_NUM" property="subcontractNum"/>
+        <result column="SURETY_ID" property="suretyId"/>
+        <result column="REL_TYPE" property="relType"/>
+        <result column="SURETY_AMT" property="suretyAmt"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectTbCrdSubcontractSuretyPage" resultMap="tbCrdSubcontractSuretyResultMap">
+        select * from TB_CRD_SUBCONTRACT_SURETY where is_deleted = 0
+    </select>
+
+</mapper>

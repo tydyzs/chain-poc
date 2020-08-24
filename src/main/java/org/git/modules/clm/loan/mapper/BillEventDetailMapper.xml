@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.loan.mapper.BillEventDetailMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="billEventDetailResultMap" type="org.git.modules.clm.loan.entity.BillEventDetail">
+        <id column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="EVENT_DETAILED_ID" property="eventDetailedId"/>
+        <result column="TRAN_DATE" property="tranDate"/>
+        <result column="BUSI_DEAL_NUM" property="busiDealNum"/>
+        <result column="BUSI_PRD_NUM" property="busiPrdNum"/>
+        <result column="BUSI_DEAL_DESC" property="busiDealDesc"/>
+        <result column="BUSI_DEAL_ORG_NUM" property="busiDealOrgNum"/>
+        <result column="BUSI_DEAL_ORG_NAME" property="busiDealOrgName"/>
+        <result column="BUSI_OPPT_ORG_NUM" property="busiOpptOrgNum"/>
+        <result column="BUSI_OPPT_ORG_NAME" property="busiOpptOrgName"/>
+        <result column="BUSI_SUM_AMT" property="busiSumAmt"/>
+        <result column="BUSI_CERT_CNT" property="busiCertCnt"/>
+        <result column="CERT_NUM" property="certNum"/>
+        <result column="CERT_TYPE_CD" property="certTypeCd"/>
+        <result column="CERT_PPT_CD" property="certPptCd"/>
+        <result column="CERT_INTEREST_PERIOD" property="certInterestPeriod"/>
+        <result column="CERT_INTEREST_RATE" property="certInterestRate"/>
+        <result column="CERT_CURRENCY_CD" property="certCurrencyCd"/>
+        <result column="CERT_SEQ_AMT" property="certSeqAmt"/>
+        <result column="CERT_APPLY_AMT" property="certApplyAmt"/>
+        <result column="CERT_APPLY_BALANCE" property="certApplyBalance"/>
+        <result column="CERT_STATUS" property="certStatus"/>
+        <result column="CERT_BEGIN_DATE" property="certBeginDate"/>
+        <result column="CERT_END_DATE" property="certEndDate"/>
+        <result column="CERT_FINISH_DATE" property="certFinishDate"/>
+        <result column="CERT_DRAWER_CUST_NUM" property="certDrawerCustNum"/>
+        <result column="CERT_DRAWER_NAME" property="certDrawerName"/>
+        <result column="CERT_DRAWER_BANK_NUM" property="certDrawerBankNum"/>
+        <result column="CERT_DRAWER_BANK_NAME" property="certDrawerBankName"/>
+        <result column="CERT_GUARANTY_TYPE" property="certGuarantyType"/>
+        <result column="CERT_GUARANTY_PERSON" property="certGuarantyPerson"/>
+        <result column="CERT_BUSI_REMARK" property="certBusiRemark"/>
+    </resultMap>
+
+
+    <select id="selectBillEventDetailPage" resultMap="billEventDetailResultMap">
+        select * from TB_BILL_EVENT_DETAIL where is_deleted = 0
+    </select>
+
+    <select id="selectGroupCertApplyAmt" resultType="map">
+        SELECT cert_drawer_bank_legal certDrawerBankLegal,SUM(cert_apply_amt) SumCertApplyAmt FROM tb_bill_event_detail
+         where tran_seq_sn=#{tranSeqSn}
+         and CERT_IS_MY_BANK='0'
+         group by cert_drawer_bank_legal
+    </select>
+
+</mapper>

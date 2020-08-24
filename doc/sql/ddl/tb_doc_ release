@@ -1,0 +1,34 @@
+--文档管理表
+DROP TABLE  tb_doc_release;
+CREATE TABLE tb_doc_release  (
+	id varchar(36) NOT NULL ,
+	doc_name varchar(100) ,
+	doc_root_name varchar(100) ,
+	doc_type_code varchar(10) ,
+	doc_type_name varchar(100) ,
+	doc_suffix varchar(10) ,
+	doc_bz varchar(200) ,
+	doc_auth varchar(10) ,
+	user_num varchar(64) ,
+	org_num varchar(64) ,
+	create_time date ,
+	is_release varchar(4) DEFAULT '0',
+	is_delete BIGINT NULL DEFAULT 0
+);
+
+COMMENT ON TABLE tb_doc_release IS '文档管理表';
+COMMENT ON COLUMN tb_doc_release.id IS '主键';
+COMMENT ON COLUMN tb_doc_release.doc_name IS '文档名称';
+COMMENT ON COLUMN tb_doc_release.doc_root_name IS '文档根目录名称';
+COMMENT ON COLUMN tb_doc_release.doc_type_code IS '文档分类编码（字典：docCatalog）';
+COMMENT ON COLUMN tb_doc_release.doc_type_name IS '文档分类名称';
+COMMENT ON COLUMN tb_doc_release.doc_suffix IS '文档类型（后缀）';
+COMMENT ON COLUMN tb_doc_release.doc_bz IS '备注';
+COMMENT ON COLUMN tb_doc_release.doc_auth IS '文档权限（字典：docAuth）';
+COMMENT ON COLUMN tb_doc_release.user_num IS '创建人id';
+COMMENT ON COLUMN tb_doc_release.org_num IS '创建部门id';
+COMMENT ON COLUMN tb_doc_release.create_time IS '创建时间';
+COMMENT ON COLUMN tb_doc_release.is_release IS '是否发布（0未发布，1已发布）';
+COMMENT ON COLUMN tb_doc_release.is_delete IS '是否已删除，0（未删除），1（已删除）';
+
+

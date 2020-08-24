@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.chart.mapper.CustomerChartMapper">
+
+    <!--    根据客户号查询其所有的授信机构-->
+    <select id="listOrgByCust" parameterType="java.lang.String" resultType="org.git.modules.system.entity.Dept">
+      select * from CHAIN_DEPT t where t.DEPT_LEVEL='1'
+        union
+      select distinct a.*
+        from TB_CRD_DETAIL t,
+             CHAIN_DEPT a
+        where t.ORG_NUM = a.ID
+        and t.CUSTOMER_NUM=#{customerNum}
+    </select>
+
+    <!--    查询额度列表-->
+    <select id="listCrdSumPage" parameterType="org.git.modules.clm.chart.vo.CrdQueryVO"
+            resultType="org.git.modules.clm.chart.vo.CrdQueryVO">
+        select distinct
+        t.LIMIT_CREDIT,t.LIMIT_AVI,t.LIMIT_USED,t.EXP_CREDIT,t.EXP_AVI,t.EXP_USED,
+        B.CERT_NUM,B.CERT_TYPE,A.CUSTOMER_NAME,a.customer_type,t.ORG_NUM
+        from TB_CRD_SUM t,
+        TB_CSM_PARTY a,
+        TB_CSM_CERT_INFO b
+        where t.CUSTOMER_NUM = a.CUSTOMER_NUM
+        and a.CUSTOMER_NUM = b.CUSTOMER_NUM
+        and t.CUSTOMER_NUM = c.CUSTOMER_NUM
+        and t.CRD_PRODUCT_TYPE='1'
+        <if test="crdQueryVO.customerName!=null">
+            and a.CUSTOMER_NAME like CONCAT(CONCAT('%',#{crdQueryVO.customerName}),'%')
+        </if>
+        <if test="crdQueryVO.certType!=null">
+            and b.cert_type =#{crdQueryVO.certType}
+        </if>
+        <if test="crdQueryVO.certNum!=null">
+            and b.cert_num =#{crdQueryVO.certNum}
+        </if>
+        <if test="crdQueryVO.orgNum!=null">
+            and t.org_num =#{crdQueryVO.orgNum}
+        </if>
+<!--        <if test="crdQueryVO.userNum!=null">-->
+<!--            and c.user_num =#{crdQueryVO.userNum}-->
+<!--        </if>-->
+    </select>
+
+
+    <!-- 查询客户额度列表
+        根据客户类型不同获取  1:个人 2:对公 3:同业
+    -->
+    <select id="getCrdListSumPage" parameterType="org.git.modules.clm.chart.vo.CrdQueryVO"
+            resultType="org.git.modules.clm.chart.vo.CrdQueryVO">
+        select distinct
+        t.LIMIT_CREDIT,t.LIMIT_AVI,t.LIMIT_USED,t.EXP_CREDIT,t.EXP_AVI,t.EXP_USED,t.LIMIT_EARMARK,t.LIMIT_EARMARK_USED,(t.LIMIT_EARMARK- t.LIMIT_EARMARK_USED) as LIMIT_EARMARK_AVI,
+        B.CERT_NUM,B.CERT_TYPE,A.CUSTOMER_NAME,t.ORG_NUM,t.CUSTOMER_NUM,a.CUSTOMER_TYPE, t.CURRENCY_CD
+        from TB_CRD_SUM t,
+        TB_CSM_PARTY a,
+        TB_CSM_CERT_INFO b,
+        CLM.CHAIN_DEPT d
+        where t.CUSTOMER_NUM = a.CUSTOMER_NUM
+        and a.CUSTOMER_NUM = b.CUSTOMER_NUM
+        and t.CRD_PRODUCT_TYPE='1'
+        and b.CERT_FLAG='01'
+        and a.CUSTOMER_TYPE = #{customerType}
+        <if test="crdQueryVO.userNum!=null and crdQueryVO.userNum!=''">
+            and c.USER_NUM =#{crdQueryVO.userNum}
+        </if>
+        <if test="crdQueryVO.customerName!=null and crdQueryVO.customerName!=''">
+            and a.CUSTOMER_NAME like CONCAT(CONCAT('%',#{crdQueryVO.customerName}),'%')
+        </if>
+        <if test="crdQueryVO.orgNum!=null and crdQueryVO.orgNum!=''">
+            and d.ANCESTORS like CONCAT(CONCAT('%',#{crdQueryVO.orgNum}),'%')
+        </if>
+        <if test="crdQueryVO.customerNum!=null and crdQueryVO.customerNum!=''">
+            and t.customer_num =#{crdQueryVO.customerNum}
+        </if>
+        <if test="crdQueryVO.certNum!=null and crdQueryVO.certNum!=''">
+            and b.cert_num =#{crdQueryVO.certNum}
+        </if>
+        <if test="crdQueryVO.certType!=null and crdQueryVO.certType!=''">
+            and b.cert_type =#{crdQueryVO.certType}
+        </if>
+    </select>
+
+    <!--    查询同业客户额度列表
+        根据客户类型不同获取  1:个人 2:对公 3:同业
+    -->
+    <select id="queryLedgerCrdSumPage" parameterType="org.git.modules.clm.chart.vo.CrdQueryVO"
+            resultType="org.git.modules.clm.chart.vo.CrdQueryVO">
+        select distinct
+        t.LIMIT_CREDIT,t.LIMIT_AVI,t.LIMIT_USED,t.LIMIT_EARMARK,t.LIMIT_EARMARK_USED,(t.LIMIT_EARMARK- t.LIMIT_EARMARK_USED) as LIMIT_EARMARK_AVI,
+        b.CERT_NUM,b.CERT_TYPE,a.CUSTOMER_NAME,c.USER_NUM,c.ORG_NUM,c.CUSTOMER_NUM,t.CURRENCY_CD
+        from TB_CRD_SUM t,
+        TB_CSM_PARTY a,
+        TB_CSM_CERT_INFO b,
+        TB_CSM_MANAGE_TEAM c,
+        CLM.CHAIN_DEPT d
+        where t.CUSTOMER_NUM = a.CUSTOMER_NUM
+        and a.CUSTOMER_NUM = b.CUSTOMER_NUM
+        and t.CUSTOMER_NUM = c.CUSTOMER_NUM
+        and c.USER_PLACING_CD = '01'
+        and t.CRD_PRODUCT_TYPE='1'
+        and b.CERT_FLAG='01'
+        and c.ORG_NUM = d.ID
+        and a.CUSTOMER_TYPE = #{customerType}
+        <if test="crdQueryVO.userNum!=null and crdQueryVO.userNum!=''">
+            and c.USER_NUM =#{crdQueryVO.userNum}
+        </if>
+        <if test="crdQueryVO.customerName!=null and crdQueryVO.customerName!=''">
+            and a.CUSTOMER_NAME like CONCAT(CONCAT('%',#{crdQueryVO.customerName}),'%')
+        </if>
+        <if test="crdQueryVO.orgNum!=null and crdQueryVO.orgNum!=''">
+            and d.ANCESTORS like CONCAT(CONCAT('%',#{crdQueryVO.orgNum}),'%')
+        </if>
+        <if test="crdQueryVO.customerNum!=null and crdQueryVO.customerNum!=''">
+            and c.customer_num =#{crdQueryVO.customerNum}
+        </if>
+        <if test="crdQueryVO.certNum!=null and crdQueryVO.certNum!=''">
+            and b.cert_num =#{crdQueryVO.certNum}
+        </if>
+        <if test="crdQueryVO.certType!=null and crdQueryVO.certType!=''">
+            and b.cert_type =#{crdQueryVO.certType}
+        </if>
+
+    </select>
+
+
+    <!--    查询额度明细列表-->
+    <select id="listCrdDetail" parameterType="org.git.modules.clm.chart.vo.CrdQueryVO"
+            resultType="org.git.modules.clm.chart.vo.CrdQueryVO">
+        select a.CUSTOMER_NUM,
+               a.CRD_DETAIL_PRD,
+               b.CRD_MAIN_PRD,
+               FNC_GET_DICT_TRANS(a.CRD_DETAIL_PRD, 'crd') CRD_DETAIL_PRD_NAME,
+               FNC_GET_DICT_TRANS(b.CRD_MAIN_PRD, 'crd')   CRD_MAIN_PRD_NAME,
+               a.LIMIT_CREDIT,
+               a.LIMIT_USED,
+               a.LIMIT_AVI,
+               a.EXP_CREDIT,
+               a.EXP_USED,
+               a.EXP_AVI,
+               a.ORG_NUM
+        from TB_CRD_DETAIL a,
+             tb_crd_main b,
+             CHAIN_DEPT c
+        where a.CRD_MAIN_NUM = b.CRD_MAIN_NUM
+          and a.ORG_NUM = c.ID
+          and a.CUSTOMER_NUM = #{customerNum}
+          and a.CRD_PRODUCT_TYPE='1'
+          and c.ANCESTORS like  CONCAT(CONCAT('%',#{orgNum}),'%')
+    </select>
+
+    <!--    查询担保额度列表-->
+    <select id="listGuaranteeCrd" parameterType="org.git.modules.clm.chart.vo.CrdQueryVO"
+            resultType="org.git.modules.clm.chart.vo.CrdQueryVO">
+            select a.CRD_DETAIL_PRD, a.LIMIT_CREDIT, a.ORG_NUM,b.CRD_PRODUCT_NAME
+            from TB_CRD_DETAIL a,
+                 TB_PAR_CRD b,
+                 CHAIN_DEPT c
+            where a.CRD_DETAIL_PRD = b.CRD_PRODUCT_NUM
+              and a.ORG_NUM = c.ID
+              and b.CRD_PRODUCT_TYPE = '2'
+              and a.CUSTOMER_NUM=#{customerNum}
+              and c.ANCESTORS like  CONCAT(CONCAT('%',#{orgNum}),'%')
+    </select>
+
+    <!--    查询对外担保列表-->
+    <select id="listGrtPage" resultType="org.git.modules.clm.chart.vo.GrtVO">
+        select f.CUSTOMER_NAME,  --被担保客户名称
+               a.CUSTOMER_NUM ,  --被担保客户编号
+               a.CONTRACT_NUM,  --合同编号
+               c.SUBCONTRACT_NUM,  --担保合同编号
+               e.SURETY_NUM, --担保物编号
+               e.CUSTOMER_NUM surety_customer_num, --抵质押人客户编号
+               c.SUBCONTRACT_TYPE, --担保合同类型
+               e.PLEDGE_TYPE, --担保物类型
+               c.IS_TOP, --是否最高额
+               c.CURRENCY_CD, --币种
+               c.SUBCONTRACT_AMT, --担保合同金额
+               d.SURETY_AMT, --占用金额
+               e.USER_NUM, --经办人
+               e.ORG_NUM --经办机构
+        from TB_CRD_CONTRACT a,
+             TB_CRD_SUBCONTRACT_CON b,
+             TB_CRD_SUBCONTRACT c,
+             TB_CRD_SUBCONTRACT_SURETY d,
+             TB_CRD_SURETY e,
+             TB_CSM_PARTY f,
+             CHAIN_DEPT g
+        where a.CONTRACT_NUM = b.CONTRACT_NUM
+          and b.SUBCONTRACT_NUM = c.SUBCONTRACT_NUM
+          and c.SUBCONTRACT_NUM = d.SUBCONTRACT_NUM
+          and d.SURETY_NUM = e.SURETY_NUM
+          and a.CUSTOMER_NUM = f.CUSTOMER_NUM
+          and e.ORG_NUM = g.ID
+          and g.ANCESTORS like CONCAT(CONCAT('%', #{orgNum}), '%')
+          and e.CUSTOMER_NUM = #{customerNum}
+    </select>
+
+    <!--    查询额度汇总列表 含机构号-->
+    <select id="sumCsmCrdInfo" parameterType="org.git.modules.clm.credit.entity.TbCrdStatisCsm"
+            resultType="org.git.modules.clm.credit.entity.TbCrdStatisCsm">
+        SELECT
+        max(STATIS_ID) STATIS_ID,
+        sum(APPROVE_EXP_AMOUNT) APPROVE_EXP_AMOUNT,
+        sum(CREDIT_EXP_BALANCE) CREDIT_EXP_BALANCE,
+        sum(LOAN_EXP_BALANCE) LOAN_EXP_BALANCE,
+        sum(LIMIT_CREDIT) LIMIT_CREDIT,
+        sum(LIMIT_AVI) LIMIT_AVI,
+        sum(LIMIT_USED) LIMIT_USED,
+        sum(EXP_USED) EXP_USED,
+        sum(EXP_AVI) EXP_AVI
+        FROM TB_CRD_STATIS_CSM a
+        WHERE (a.ORG_NUM=#{orgNum} or exists (SELECT d.id FROM CHAIN_DEPT d WHERE d.PARENT_ID = #{orgNum} and a.ORG_NUM = d.id))
+        and a.CUSTOMER_NUM = #{customerNum}
+    </select>
+
+    <!--    查询额度汇总列表 通过客户号-->
+    <select id="sumCsmCrdInfoByCus" parameterType="org.git.modules.clm.credit.entity.TbCrdStatisCsm"
+            resultType="org.git.modules.clm.credit.entity.TbCrdStatisCsm">
+        SELECT
+        max(STATIS_ID) STATIS_ID,
+        sum(APPROVE_EXP_AMOUNT) APPROVE_EXP_AMOUNT,
+        sum(CREDIT_EXP_BALANCE) CREDIT_EXP_BALANCE,
+        sum(LOAN_EXP_BALANCE) LOAN_EXP_BALANCE,
+        sum(LIMIT_CREDIT) LIMIT_CREDIT,
+        sum(LIMIT_AVI) LIMIT_AVI,
+        sum(LIMIT_USED) LIMIT_USED,
+        sum(EXP_USED) EXP_USED,
+        sum(EXP_AVI) EXP_AVI
+        FROM TB_CRD_STATIS_CSM a,CHAIN_DEPT g
+        WHERE a.ORG_NUM=g.ID
+        and a.CUSTOMER_NUM = #{customerNum}
+        <if test="orgNum!=null">
+            and g.ANCESTORS like CONCAT(CONCAT('%', #{orgNum}), '%')
+        </if>
+
+    </select>
+
+</mapper>

@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.loan.mapper.CrdApplySerialMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="crdApplySerialResultMap" type="org.git.modules.clm.loan.entity.CrdApplySerial">
+        <id column="SERIAL_ID" property="serialId"/>
+        <result column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="TRAN_DATE" property="tranDate"/>
+        <result column="BUSI_DEAL_NUM" property="busiDealNum"/>
+        <result column="TRAN_TYPE_CD" property="tranTypeCd"/>
+        <result column="CRD_DETAIL_NUM" property="crdDetailNum"/>
+        <result column="CRD_GRANT_ORG_NUM" property="crdGrantOrgNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CRD_DETAIL_PRD" property="crdDetailPrd"/>
+        <result column="LIMIT_CREDIT_AMT" property="limitCreditAmt"/>
+        <result column="EXP_CREDIT_AMT" property="expCreditAmt"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="IS_MIX" property="isMix"/>
+        <result column="MIX_CREDIT" property="mixCredit"/>
+        <result column="TRAN_SYSTEM" property="tranSystem"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectCrdApplySerialPage" resultMap="crdApplySerialResultMap">
+        select * from TB_CRD_APPLY_SERIAL
+    </select>
+
+    <select id="countMemberSplitAviValid" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM
+        (
+            SELECT
+                SUM(s.limit_credit_amt) limit_credit_amt ,
+                MAX(d.limit_avi)        limit_avi
+            FROM
+                tb_crd_apply_serial s
+            INNER JOIN
+                tb_crd_detail d
+            ON
+                s.crd_detail_num=d.crd_detail_num
+            WHERE
+                s.serial_id IN
+                    <foreach collection="certInfoIds" item="certInfoId" open="(" separator="," close=")">
+                        #{certInfoId}
+                    </foreach>
+            GROUP BY
+                d.crd_detail_num,
+                d.limit_avi)
+        WHERE
+            limit_credit_amt>limit_avi
+    </select>
+
+    <select id="countMemberAviValid" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM
+            (
+                SELECT
+                    SUM(s.limit_credit_amt) limit_credit_amt,
+                    MIN(m.limit_avi)        limit_avi,
+                    MIN(m.crd_main_num)     crd_main_num
+                FROM
+                    tb_crd_apply_serial s
+                INNER JOIN
+                    tb_crd_detail d
+                ON
+                    s.crd_detail_num=d.crd_detail_num
+                INNER JOIN
+                    tb_crd_main m
+                ON
+                    d.crd_main_num=m.crd_main_num
+                WHERE
+                    s.serial_id IN
+                        <foreach collection="certInfoIds" item="certInfoId" open="(" separator="," close=")">
+                            #{certInfoId}
+                        </foreach>
+                GROUP BY
+                    m.crd_main_num)
+        WHERE
+            limit_credit_amt>limit_avi
+    </select>
+
+    <select id="countProviceSplitAviValid" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM
+            (
+                SELECT
+                    SUM(s.limit_credit_amt) limit_credit_amt ,
+                    MAX(d.limit_avi)        limit_avi
+                FROM
+                    tb_crd_apply_serial s
+                INNER JOIN
+                    (
+                        SELECT
+                            b.crd_detail_num,
+                            a.limit_avi
+                        FROM
+                            tb_crd_detail a
+                        LEFT JOIN
+                            tb_crd_detail b
+                        ON
+                            a.customer_num = b.customer_num
+                        AND a.crd_detail_prd = b.crd_detail_prd
+                        AND a.crd_grant_org_num != b.crd_grant_org_num
+                        WHERE
+                            a.crd_grant_org_num = #{crdGrantOrgNum}) d
+                ON
+                    s.crd_detail_num=d.crd_detail_num
+                WHERE
+                    s.serial_id IN
+                        <foreach collection="certInfoIds" item="certInfoId" open="(" separator="," close=")">
+                            #{certInfoId}
+                        </foreach>
+                GROUP BY
+                    d.crd_detail_num,
+                    d.limit_avi)
+        WHERE
+            limit_credit_amt>limit_avi
+    </select>
+
+    <select id="countProviceAviValid" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM
+            (
+                SELECT
+                    SUM(s.limit_credit_amt) limit_credit_amt,
+                    MIN(m.limit_avi)        limit_avi,
+                    MIN(m.crd_main_num)     crd_main_num
+                FROM
+                    tb_crd_apply_serial s
+                INNER JOIN
+                    tb_crd_detail d
+                ON
+                    s.crd_detail_num=d.crd_detail_num
+                INNER JOIN
+                    (
+                        SELECT
+                            b.crd_main_num,
+                            a.limit_avi
+                        FROM
+                            tb_crd_main a
+                        LEFT JOIN
+                            tb_crd_main b
+                        ON
+                            a.customer_num = b.customer_num
+                        AND a.crd_main_prd = b.crd_main_prd
+                        AND a.crd_grant_org_num != b.crd_grant_org_num
+                        WHERE
+                            a.crd_grant_org_num = #{crdGrantOrgNum}) m
+                ON
+                    d.crd_main_num=m.crd_main_num
+                WHERE
+                    s.serial_id IN
+                        <foreach collection="certInfoIds" item="certInfoId" open="(" separator="," close=")">
+                            #{certInfoId}
+                        </foreach>
+                GROUP BY
+                    m.crd_main_num)
+        WHERE
+            limit_credit_amt>limit_avi
+    </select>
+
+    <select id="countMemberSplitUsedValid" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM
+        (
+            SELECT
+                SUM(s.limit_credit_amt) limit_credit_amt ,
+                MAX(d.limit_used)        limit_used
+            FROM
+                tb_crd_apply_serial s
+            INNER JOIN
+                tb_crd_detail d
+            ON
+                s.crd_detail_num=d.crd_detail_num
+            WHERE
+                s.serial_id IN
+                    <foreach collection="certInfoIds" item="certInfoId" open="(" separator="," close=")">
+                        #{certInfoId}
+                    </foreach>
+            GROUP BY
+                d.crd_detail_num,
+                d.limit_used)
+        WHERE
+            limit_credit_amt>limit_used
+    </select>
+
+    <select id="countMemberUsedValid" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM
+            (
+                SELECT
+                    SUM(s.limit_credit_amt) limit_credit_amt,
+                    MIN(m.limit_used)        limit_used,
+                    MIN(m.crd_main_num)     crd_main_num
+                FROM
+                    tb_crd_apply_serial s
+                INNER JOIN
+                    tb_crd_detail d
+                ON
+                    s.crd_detail_num=d.crd_detail_num
+                INNER JOIN
+                    tb_crd_main m
+                ON
+                    d.crd_main_num=m.crd_main_num
+                WHERE
+                    s.serial_id IN
+                        <foreach collection="certInfoIds" item="certInfoId" open="(" separator="," close=")">
+                            #{certInfoId}
+                        </foreach>
+                GROUP BY
+                    m.crd_main_num)
+        WHERE
+            limit_credit_amt>limit_used
+    </select>
+
+    <select id="countProviceSplitUsedValid" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM
+            (
+                SELECT
+                    SUM(s.limit_credit_amt) limit_credit_amt ,
+                    MAX(d.limit_used)        limit_used
+                FROM
+                    tb_crd_apply_serial s
+                INNER JOIN
+                    (
+                        SELECT
+                            b.crd_detail_num,
+                            a.limit_used
+                        FROM
+                            tb_crd_detail a
+                        LEFT JOIN
+                            tb_crd_detail b
+                        ON
+                            a.customer_num = b.customer_num
+                        AND a.crd_detail_prd = b.crd_detail_prd
+                        AND a.crd_grant_org_num != b.crd_grant_org_num
+                        WHERE
+                            a.crd_grant_org_num = #{crdGrantOrgNum}) d
+                ON
+                    s.crd_detail_num=d.crd_detail_num
+                WHERE
+                    s.serial_id IN
+                        <foreach collection="certInfoIds" item="certInfoId" open="(" separator="," close=")">
+                            #{certInfoId}
+                        </foreach>
+                GROUP BY
+                    d.crd_detail_num,
+                    d.limit_used)
+        WHERE
+            limit_credit_amt>limit_used
+    </select>
+
+    <select id="countProviceUsedValid" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM
+            (
+                SELECT
+                    SUM(s.limit_credit_amt) limit_credit_amt,
+                    MIN(m.limit_used)        limit_used,
+                    MIN(m.crd_main_num)     crd_main_num
+                FROM
+                    tb_crd_apply_serial s
+                INNER JOIN
+                    tb_crd_detail d
+                ON
+                    s.crd_detail_num=d.crd_detail_num
+                INNER JOIN
+                    (
+                        SELECT
+                            b.crd_main_num,
+                            a.limit_used
+                        FROM
+                            tb_crd_main a
+                        LEFT JOIN
+                            tb_crd_main b
+                        ON
+                            a.customer_num = b.customer_num
+                        AND a.crd_main_prd = b.crd_main_prd
+                        AND a.crd_grant_org_num != b.crd_grant_org_num
+                        WHERE
+                            a.crd_grant_org_num = #{crdGrantOrgNum}) m
+                ON
+                    d.crd_main_num=m.crd_main_num
+                WHERE
+                    s.serial_id IN
+                        <foreach collection="certInfoIds" item="certInfoId" open="(" separator="," close=")">
+                            #{certInfoId}
+                        </foreach>
+                GROUP BY
+                    m.crd_main_num)
+        WHERE
+            limit_credit_amt>limit_used
+    </select>
+
+    <select id="selectCustByDealNum" resultType="java.lang.String">
+        SELECT DISTINCT customer_num FROM tb_crd_apply_serial WHERE busi_deal_num = #{busiDealNum}
+    </select>
+
+    <select id="findLedgerCrdApplySerialPage" resultType="org.git.modules.clm.loan.vo.CrdApplySerialVO">
+       select
+                t1.*,
+                t2.CRD_PRODUCT_NAME              -- 三级额度产品
+        from
+            tb_crd_apply_serial t1,          -- 额度使用流水
+            tb_par_crd t2,                    -- 额度品种配置
+             CHAIN_DEPT t3
+        where t1.crd_detail_prd=t2.CRD_PRODUCT_NUM
+        and t1.ORG_NUM = t3.ID
+        and t1.CUSTOMER_NUM = #{customerNum}
+        and  t3.ANCESTORS like CONCAT(CONCAT('%', #{orgNum}), '%')
+    </select>
+
+    <select id="getApplySerialPage" resultType="org.git.modules.clm.loan.vo.CrdApplySerialVO">
+        select
+            t1.*,t2.CRD_PRODUCT_NAME,t4.TERMINAL_NAME
+        from
+            tb_crd_apply_serial t1,
+            TB_PAR_CRD t2,
+            CHAIN_DEPT t3,
+            TB_FRONT_TERMINAL_CONFIG t4
+        where t1.CRD_DETAIL_PRD = t2.CRD_PRODUCT_NUM
+        and   t1.CUSTOMER_NUM = #{customerNum}
+        and   t1.TRAN_SYSTEM = t4.TERMINAL_CODE
+        and   t1.ORG_NUM = t3.ID
+        and
+            t3.ANCESTORS like CONCAT(CONCAT('%', #{orgNum}), '%')
+    </select>
+
+    <select id="selectNewestSerial" parameterType="string" resultMap="crdApplySerialResultMap">
+        SELECT * FROM TB_CRD_APPLY_SERIAL WHERE BUSI_DEAL_NUM=#{busiDealNum} ORDER BY TRAN_SEQ_SN FETCH FIRST 1 ROW ONLY;
+    </select>
+</mapper>

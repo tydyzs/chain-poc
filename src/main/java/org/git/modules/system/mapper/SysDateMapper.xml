@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.system.mapper.SysDateMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="sysDateResultMap" type="org.git.modules.system.entity.SysDate">
+        <result column="BUSI_DATE" property="busiDate"/>
+        <result column="BAT_DATE" property="batDate"/>
+        <result column="SYSTEM_SWITCH" property="systemSwitch"/>
+    </resultMap>
+
+
+    <select id="selectSysDatePage" resultMap="sysDateResultMap">
+        select * from TB_SYS_DATE where is_deleted = 0
+    </select>
+
+</mapper>

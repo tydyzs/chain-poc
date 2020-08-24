@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.loan.mapper.CrdMainMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="crdMainResultMap" type="org.git.modules.clm.loan.entity.CrdMain">
+        <id column="CRD_MAIN_NUM" property="crdMainNum"/>
+        <result column="CRD_MAIN_PRD" property="crdMainPrd"/>
+        <result column="CRD_GRANT_ORG_NUM" property="crdGrantOrgNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="EXCHANGE_RATE" property="exchangeRate"/>
+        <result column="CREDIT_STATUS" property="creditStatus"/>
+        <result column="LIMIT_CREDIT" property="limitCredit"/>
+        <result column="LIMIT_USED" property="limitUsed"/>
+        <result column="LIMIT_AVI" property="limitAvi"/>
+        <result column="EXP_CREDIT" property="expCredit"/>
+        <result column="EXP_USED" property="expUsed"/>
+        <result column="EXP_AVI" property="expAvi"/>
+        <result column="LIMIT_PRE" property="limitPre"/>
+        <result column="EXP_PRE" property="expPre"/>
+        <result column="LIMIT_FROZEN" property="limitFrozen"/>
+        <result column="EXP_FROZEN" property="expFrozen"/>
+        <result column="BEGIN_DATE" property="beginDate"/>
+        <result column="END_DATE" property="endDate"/>
+        <result column="FROZEN_DATE" property="frozenDate"/>
+        <result column="OVER_DATE" property="overDate"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="TRAN_SYSTEM" property="tranSystem"/>
+    </resultMap>
+
+    <resultMap id="crdMainResultMapVO" type="org.git.modules.clm.loan.vo.CrdMainVO">
+        <id column="CRD_MAIN_NUM" property="crdMainNum"/>
+        <result column="CRD_MAIN_PRD" property="crdMainPrd"/>
+        <result column="CRD_GRANT_ORG_NUM" property="crdGrantOrgNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CERT_TYPE" property="certType"/>
+        <result column="CERT_NUM" property="certNum"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="EXCHANGE_RATE" property="exchangeRate"/>
+        <result column="CREDIT_STATUS" property="creditStatus"/>
+        <result column="LIMIT_CREDIT" property="limitCredit"/>
+        <result column="LIMIT_USED" property="limitUsed"/>
+        <result column="LIMIT_AVI" property="limitAvi"/>
+        <result column="EXP_CREDIT" property="expCredit"/>
+        <result column="EXP_USED" property="expUsed"/>
+        <result column="EXP_AVI" property="expAvi"/>
+        <result column="LIMIT_PRE" property="limitPre"/>
+        <result column="EXP_PRE" property="expPre"/>
+        <result column="LIMIT_FROZEN" property="limitFrozen"/>
+        <result column="EXP_FROZEN" property="expFrozen"/>
+        <result column="BEGIN_DATE" property="beginDate"/>
+        <result column="END_DATE" property="endDate"/>
+        <result column="FROZEN_DATE" property="frozenDate"/>
+        <result column="OVER_DATE" property="overDate"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="TRAN_SYSTEM" property="tranSystem"/>
+        <result column="CUST_NAME" property="custName"/>
+        <result column="CREDIT_ORGAN_CODE" property="creditOrganCode"/>
+    </resultMap>
+
+    <select id="selectCorporateCrdList" resultType="org.git.modules.clm.loan.vo.CrdMainVO">
+        select
+            t1.*, t2.CRD_PRODUCT_NAME
+        from
+            tb_crd_main t1,TB_PAR_CRD t2,CHAIN_DEPT t3
+        where
+            t1.CRD_MAIN_PRD = t2.CRD_PRODUCT_NUM
+        and
+            t1.CUSTOMER_NUM = #{customerNum}
+        and
+            t1.ORG_NUM = t3.ID
+        and
+            t3.ANCESTORS like  CONCAT(CONCAT('%',#{orgNum}),'%')
+        order by
+            t2.CRD_PRODUCT_NAME desc;
+    </select>
+
+    <select id="selectCrdMainPage" resultMap="crdMainResultMap">
+        select * from TB_CRD_MAIN where is_deleted = 0
+    </select>
+
+    <select id="findLedgerCrdMainPage" resultType="org.git.modules.clm.loan.vo.CrdMainVO">
+      select
+            t1.*, t2.CRD_PRODUCT_NAME
+        from
+            tb_crd_main t1,TB_PAR_CRD t2,CHAIN_DEPT t3
+        where  t1.CRD_MAIN_PRD = t2.CRD_PRODUCT_NUM
+        and  t1.ORG_NUM = t3.ID
+        and  t1.CUSTOMER_NUM = #{customerNum}
+        and  t3.ANCESTORS like  CONCAT(CONCAT('%',#{orgNum}),'%')
+        order by  t2.CRD_PRODUCT_NAME desc;
+    </select>
+
+
+    <insert id="moveSerialToMain">
+        insert
+            into
+                tb_crd_main
+                (
+                    crd_main_num,
+                    crd_main_prd,
+                    crd_grant_org_num,
+                    customer_num,
+                    currency_cd,
+                    credit_status,
+                    limit_credit,
+                    limit_avi,
+                    begin_date,
+                    end_date,
+                    create_time,
+                    update_time,
+                    org_num,
+                    user_num,
+                    tran_system
+                )
+            select
+                crd_detail_num,
+                crd_detail_prd,
+                crd_grant_org_num,
+                customer_num,
+                crd_currency_cd,
+                #{crdMain.creditStatus},
+                crd_detail_amt,
+                crd_detail_amt,
+                crd_begin_date,
+                crd_end_date,
+                create_time,
+                update_time,
+                #{crdMain.orgNum},
+                user_num,
+                #{crdMain.tranSystem}
+            from
+                tb_crd_granting_serial
+            where 1=1
+                  and granting_serial_id = #{grantingSerialId}
+    </insert>
+
+    <!-- 预占用、预占用撤销 修改授信主表预占用和可用额度 -->
+    <update id="updateMainForPre">
+       UPDATE
+            tb_crd_detail
+        SET
+            limit_pre =
+            CASE
+                WHEN limit_pre IS NULL
+                THEN 0
+                ELSE limit_pre
+            END+#{crdMain.limit_pre},
+            limit_avi = limit_avi-#{crdMain.limit_pre},
+            update_time = #{crdMain.updateTime}
+        WHERE
+            crd_grant_org_num=#{crdMain.crdGrantOrgNum}
+            AND customer_num=#{crdMain.customerNum}
+            AND crd_detail_prd=#{crdMain.crdMainPrd}
+    </update>
+
+    <!-- 占用、占用撤销、恢复、恢复撤销 修改授信主表预占用和已用 -->
+    <update id="updateMainForUsed">
+       UPDATE
+            tb_crd_detail
+        SET
+            limit_pre =
+            CASE
+                WHEN limit_pre IS NULL
+                THEN 0
+                ELSE limit_pre
+            END-#{crdMain.limit_used},
+            limit_used = limit_used+#{crdMain.limit_used},
+            update_time = #{crdMain.updateTime}
+        WHERE
+            crd_grant_org_num=#{crdMain.crdGrantOrgNum}
+            AND customer_num=#{crdMain.customerNum}
+            AND crd_detail_prd=#{crdMain.crdMainPrd}
+    </update>
+</mapper>

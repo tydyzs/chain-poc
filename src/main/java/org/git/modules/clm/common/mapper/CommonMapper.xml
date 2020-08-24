@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.common.mapper.CommonMapper">
+
+    <!--授信额度重算-->
+    <update id="creditRecount" parameterType="java.lang.String" statementType="CALLABLE">
+        {call prc_credit_recount(#{customerNum,mode=IN})}
+    </update>
+
+    <!--第三方额度重算-->
+    <update id="thirdRecount" parameterType="java.lang.String" statementType="CALLABLE">
+        {call prc_third_recount(#{customerNum,mode=IN})}
+    </update>
+
+    <!--    担保额度-->
+    <update id="guaranteeRecount" parameterType="java.lang.String" statementType="CALLABLE">
+        {call prc_guarantee_recount(#{customerNum,mode=IN})}
+    </update>
+
+    <!--    客户额度统计-->
+    <update id="creditStatisCsm" parameterType="java.lang.String" statementType="CALLABLE">
+        {call prc_credit_statis_csm(#{customerNum,mode=IN})}
+    </update>
+
+    <!--    额度统计-->
+    <update id="creditStatis" statementType="CALLABLE">
+        {call prc_credit_statis()}
+    </update>
+
+    <!--    历史额度统计-->
+    <update id="creditStatisHs" statementType="CALLABLE">
+        {call prc_credit_statis_hs()}
+    </update>
+
+
+    <select id="selectNoticePage" parameterType="org.git.modules.desk.vo.NoticeVO"
+            resultType="org.git.modules.desk.vo.NoticeVO">
+        SELECT n.*,
+        d.dict_value AS category_name,
+        u.NAME       as create_user_name,
+        cd.DEPT_NAME as create_dept_name
+        FROM chain_notice n
+        LEFT JOIN chain_dict d on d.CODE = 'notice' and n.category = d.dict_key
+        left join chain_user u on u.id = n.CREATE_USER
+        left join CHAIN_DEPT cd on cd.ID = n.CREATE_DEPT
+        WHERE n.is_deleted = 0
+        <if test="noticeVO.title!=null and noticeVO.title!=''" >
+            and n.title like CONCAT(CONCAT('%',#{noticeVO.title}),'%')
+        </if>
+        <if test="noticeVO.category!=null and noticeVO.category!=''">
+            and n.category = #{noticeVO.category}
+        </if>
+        <if test="noticeVO.releaseTime!=null and noticeVO.releaseTime!=''">
+            and n.release_time = #{noticeVO.releaseTime}
+        </if>
+        <if test="noticeVO.createDept!=null and noticeVO.createDept!=''">
+            and n.create_dept = #{noticeVO.createDept}
+        </if>
+    </select>
+
+</mapper>

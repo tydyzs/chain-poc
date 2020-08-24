@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.system.mapper.UserRoleMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="userRoleResultMap" type="org.git.modules.system.entity.UserRole">
+        <result column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="role_user" property="roleId"/>
+        <result column="dept_time" property="deptId"/>
+        <result column="is_master_org" property="isMasterOrg"/>
+    </resultMap>
+
+    <resultMap id="userDeptResultMap" type="org.git.modules.system.vo.UserRoleVO">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="role_id" property="roleId"/>
+        <result column="dept_id" property="deptId"/>
+        <result column="full_name" property="fullName"/>
+        <result column="dept_name" property="deptName"/>
+        <result column="dept_level" property="deptLevel"/>
+        <result column="is_master_org" property="isMasterOrg"/>
+    </resultMap>
+
+    <select id="deptsByUserId" resultMap="userDeptResultMap">
+        select u.id,u.user_id,u.role_id,u.dept_id,u.is_master_org,d.dept_name,d.full_name,d.dept_level from tb_user_role u,chain_dept d where
+        u.dept_id = to_char(d.id) and d.is_deleted = 0
+        <if test="_parameter!=null">
+            and u.user_id = #{_parameter}
+        </if>
+    </select>
+
+    <update id="cancelMasterOrg">
+        update tb_user_role set is_master_org = 0 where user_id = #{userId}
+    </update>
+
+</mapper>

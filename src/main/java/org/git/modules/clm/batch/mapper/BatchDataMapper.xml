@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.batch.mapper.BatchDataMapper">
+
+    <!--合同信息 -->
+    <select id="listContractNum" resultType="java.util.HashMap">
+            select distinct A.*, b.CONTRACT_NUM s_contract_num from TT_CRD_CONTRACT_SOURCE A left join TB_CRD_CONTRACT B
+            on a.CONTRACT_NUM=b.CONTRACT_NUM
+    </select>
+
+    <select id="listSubContractInfo" parameterType="java.lang.String" resultType="org.git.modules.clm.front.dto.jxrcb.loan.SubContractInfoRequestDTO">
+        select c.*,b.surety_amt
+        from tt_crd_contract_source a,tt_crd_subcontract_con_source b,tt_crd_subcontract_source c
+        where
+        a.contract_num=b.contract_num
+        and
+        b.subcontract_num=c.subcontract_num
+        and
+        a.contract_num=#{contract_num}
+    </select>
+
+    <select id="listSuretyInfo" parameterType="java.lang.String" resultType="org.git.modules.clm.front.dto.jxrcb.loan.PledgeInfoRequestDTO">
+        select b.subcontract_num,a.surety_num,a.pledge_name,a.pledge_type,a.customer_num,a.customer_type,a.pledge_rate,a.amt_asses,a.amt_actual,a.guarantee_type,a.pledge_status,b.surety_amt
+        from tt_crd_surety_source a,tt_crd_subcontract_surety_source b
+        where a.surety_num=b.surety_num
+        and b.subcontract_num=#{subcontract_num}
+    </select>
+
+    <select id="listSuretyPersonInfo" parameterType="java.lang.String" resultType="org.git.modules.clm.front.dto.jxrcb.loan.SuretyInfoRequestDTO">
+        select b.subcontract_num,b.customer_num,a.customer_type,b.surety_amt,b.surety_amt as total_amt
+        from tt_crd_surety_source a,tt_crd_subcontract_surety_source b
+        where a.surety_num=b.surety_num
+        and b.subcontract_num=#{subcontract_num}
+    </select>
+
+    <!-- 批复信息 -->
+    <select id="listApproveNum" resultType="java.util.HashMap">
+            select distinct A.APPROVE_NUM,a.*, b.APPROVE_NUM S_APPROVE_NUM
+            from TT_CRD_APPROVE_SOURCE A left join TB_CRD_APPROVE B
+            on a.APPROVE_NUM=b.APPROVE_NUM
+    </select>
+
+    <select id="listApproveDetailInfo" parameterType="java.lang.String" resultType="org.git.modules.clm.front.dto.jxrcb.loan.LimitDetailInfoRequestDTO">
+        select b.APPROVE_NUM,b.CUSTOMER_NUM,b.CUSTOMER_TYPE,b.IS_BANK_REL,b.is_joint_guarantee,b.USER_NUM,b.ORG_NUM,b.TOTAL_AMT,b.BIZ_TYPE,b.TRAN_DATE,b.APPROVE_STATUS,
+        a.BIZ_HAPPEN_TYPE,a.IS_LOW_RISK,a.OLD_SUMMARY_NUM,a.CURRENCY_CD,a.EXCHANGE_RATE,a.APPROVE_AMT,a.PRODUCT_NUM,a.PRODUCT_TYPE,a.IS_CYCLE,a.INDUSTRY,a.GUARANTEE_TYPE,a.MAIN_GUARANTEE_TYPE,a.GUARANTEE_TYPE_DETAIL,a.DEPOSIT_RATIO,a.TERM,a.TERM_UNIT,a.PROJECT_NUM
+        from tt_crd_approve_detail_source a,TT_CRD_APPROVE_SOURCE b
+        where a.APPROVE_NUM=b.APPROVE_NUM
+        and a.APPROVE_NUM=#{approveNum}
+    </select>
+
+    <!-- 借据信息 -->
+    <select id="listSummaryNum" resultType="java.util.HashMap">
+        select distinct a.SUMMARY_NUM,a.*,b.SUMMARY_NUM S_SUMMARY_NUM
+        from tt_crd_summary_source a left join tb_crd_summary b
+        on a.SUMMARY_NUM=b.SUMMARY_NUM
+    </select>
+    <!-- 项目信息 -->
+    <select id="listProjectNum" resultType="java.util.HashMap">
+        select distinct a.PROJECT_NUM,a.*,b.PROJECT_NUM S_PROJECT_NUM
+        from tt_crd_project_source a left join tb_crd_project b
+        on a.PROJECT_NUM=b.PROJECT_NUM
+    </select>
+    <!-- 实时还款信息 -->
+    <select id="listrecoveryEventNum" resultType="java.util.HashMap">
+        select distinct a.TRAN_SEQ_SN,a.*,b.TRAN_SEQ_SN S_TRAN_SEQ_SN
+        from tt_crd_recovery_event_source a left join tb_crd_recovery_event b
+        on a.TRAN_SEQ_SN=b.TRAN_SEQ_SN
+    </select>
+
+    <!-- 银票签发 -->
+    <select id="listContractNumOfBill" resultType="java.util.HashMap">
+        select distinct a.CONTRACT_NUM,b.contract_num S_CONTRACT_NUM
+        from tt_crd_bill_info_source a left join tb_crd_summary b on
+        a.contract_num=b.contract_num
+    </select>
+
+    <select id="getHeadInfo" parameterType="java.lang.String" resultType="java.util.HashMap">
+        select a.CURRENCY_CD,a.EXCHANGE_RATE,a.USER_NUM,a.ORG_NUM
+        from tt_crd_bill_info_source a
+        where
+        a.contract_num=#{contract_num}
+    </select>
+
+    <select id="listBillInfo" parameterType="java.lang.String" resultType="org.git.modules.clm.front.dto.jxrcb.loan.BillInfoRequestDTO">
+        select a.*
+        from tt_crd_bill_info_source a
+        where
+        a.contract_num=#{contract_num}
+    </select>
+
+    <select id="isEqualsBillInfo" parameterType="org.git.modules.clm.batch.vo.TtCrdBillInfoSourceVO" resultType="java.lang.String">
+        select count(*) mycount
+        from tb_crd_summary a
+        where
+        a.contract_num=#{contractNum}
+        and a.CURRENCY_CD=#{currencyCd}
+        and a.EXCHANGE_RATE=#{exchangeRate}
+        and a.USER_NUM=#{userNum}
+        and a.ORG_NUM=#{orgNum}
+        and a.BILL_NUM=#{billNum}
+        and a.SUMMARY_NUM=#{summaryNum}
+        and a.BILL_TYPE=#{billType}
+        and a.BILL_STATUS=#{billStatus}
+        and a.SUMMARY_AMT=#{summaryAmt}
+        and a.BEGIN_DATE=#{beginDate}
+        and a.END_DATE=#{endDate}
+        and a.DEPOSIT_RATIO=#{depositRatio}
+        and a.GUARANTEE_TYPE=#{guaranteeType}
+        and a.MAIN_GUARANTEE_TYPE=#{mainGuaranteeType}
+        and a.ACCEPTOR_ECIF_NUM=#{acceptorEcifNum}
+        and a.DRAWER_NAME=#{drawerName}
+        and a.DRAWER_ACCT=#{drawerAcct}
+        and a.DRAWER_BANK_NUM=#{drawerBankNum}
+        and a.DRAWER_BANK_NAME=#{drawerBankName}
+        and a.PAY_NAME=#{payName}
+        and a.PAY_ACCT=#{payAcct}
+        and a.PAYEE_NAME=#{payeeName}
+        and a.PAYEE_ACCT=#{payeeAcct}
+        and a.PAYEE_BANK_NUM=#{payeeBankNum}
+        and a.PAYEE_BANK_NAME=#{payeeBankName}
+    </select>
+
+    <!--信用卡 -->
+    <update id="ccDataInsertOrUpdate" parameterType="java.lang.String">
+    merge into tb_crd_cc_info a
+    using
+    (
+            select b.acct_no ACCT_NUM,b.cust_id CUSTOMER_NUM,c.BANK_CUSTOMER_ID CC_CUSTOMER_NUM,c.NAME CUSTOMER_NAME,c.ID_TYPE CERT_TYPE,c.ID_NO CERT_NUM,b.PRODUCT_CD PRODUCT_NUM,b.CURR_CD CURRENCY_CD,dec(b.CREDIT_LIMIT) CREDIT_LIMIT,dec(b.TEMP_LIMIT) TEMP_LIMIT,b.TEMP_LIMIT_BEGIN_DATE,b.TEMP_LIMIT_END_DATE,
+                    dec(b.CASH_LIMIT_RT,10,6) CASH_LIMIT_RT ,dec(b.OVRLMT_RATE,10,6) OVRLMT_RATE,dec(b.LOAN_LIMIT_RT,10,6) LOAN_LIMIT_RT,dec(b.CURR_BAL,24,2) CURR_BAL,dec(b.CASH_BAL,24,2) CASH_BAL,dec(b.PRINCIPAL_BAL,24,2) PRINCIPAL_BAL,dec(b.LOAN_BAL,24,2) LOAN_BAL,dec(b.QUAL_GRACE_BAL,24,2) QUAL_GRACE_BAL,dec(b.ACTUAL_PAYMENT_AMT,24,2) ACTUAL_PAYMENT_AMT,dec(b.CHARGE_OFF_AMT,24,2) CHARGE_OFF_AMT,
+                    dec(b.UNSTMT_BAL,24,2) UNSTMT_BAL,dec(b.CTD_REAIL_PRIN_BAL,24,2) CTD_REAIL_PRIN_BAL,dec(b.STMT_REAIL_PRIN_BAL,24,2) STMT_REAIL_PRIN_BAL,dec(b.CTD_CASH_PRIN_BAL,24,2) CTD_CASH_PRIN_BAL,dec(b.STMT_CASH_PRIN_BAL,24,2) STMT_CASH_PRIN_BAL,dec(b.CTD_LOAN_PRIN_BAL,24,2) CTD_LOAN_PRIN_BAL,dec(b.STMT_LOAN_PRIN_BAL,24,2) STMT_LOAN_PRIN_BAL,dec(b.LARGE_LOAN_BAL_XFROUT,24,2) LARGE_LOAN_BAL_XFROUT,
+                    dec(b.UNMATCH_DB_AMT,24,2) UNMATCH_DB_AMT,dec(b.UNMATCH_CR_AMT,24,2) UNMATCH_CR_AMT,dec(b.OVERLIMIT_AMT,24,2) OVERLIMIT_AMT,dec(b.REMAIN_GRACE_BAL,24,2) REMAIN_GRACE_BAL,b.GRACE_DAYS_FULL_IND,b.GLP_BRANCH ORG_NUM,b.BILLING_CYCLE
+            from tt_crd_cc_info_source b,tt_data_customer_org_source c
+            where b.cust_id=c.cust_id
+    ) s
+    on (a.acct_num=s.ACCT_NUM)
+    WHEN NOT MATCHED
+        THEN
+        insert(
+            ACCT_NUM,
+            CUSTOMER_NUM,
+            CC_CUSTOMER_NUM,
+            CUSTOMER_NAME,
+            CERT_TYPE,
+            CERT_NUM,
+            PRODUCT_NUM,
+            CURRENCY_CD,
+            CREDIT_LIMIT,
+            TEMP_LIMIT,
+            TEMP_LIMIT_BEGIN_DATE,
+            TEMP_LIMIT_END_DATE,
+            CASH_LIMIT_RT,
+            OVRLMT_RATE,
+            LOAN_LIMIT_RT,
+            CURR_BAL,
+            CASH_BAL,
+            PRINCIPAL_BAL,
+            LOAN_BAL,
+            QUAL_GRACE_BAL,
+            ACTUAL_PAYMENT_AMT,
+            CHARGE_OFF_AMT,
+            UNSTMT_BAL,
+            CTD_REAIL_PRIN_BAL,
+            STMT_REAIL_PRIN_BAL,
+            CTD_CASH_PRIN_BAL,
+            STMT_CASH_PRIN_BAL,
+            CTD_LOAN_PRIN_BAL,
+            STMT_LOAN_PRIN_BAL,
+            LARGE_LOAN_BAL_XFROUT,
+            UNMATCH_DB_AMT,
+            UNMATCH_CR_AMT,
+            OVERLIMIT_AMT,
+            REMAIN_GRACE_BAL,
+            GRACE_DAYS_FULL_IND,
+            ORG_NUM,
+            BILLING_CYCLE,
+            CREATE_TIME,
+            UPDATE_TIME
+        )
+        values(
+            s.ACCT_NUM,
+            s.CUSTOMER_NUM,
+            s.CC_CUSTOMER_NUM,
+            s.CUSTOMER_NAME,
+            s.CERT_TYPE,
+            s.CERT_NUM,
+            s.PRODUCT_NUM,
+            s.CURRENCY_CD,
+            s.CREDIT_LIMIT,
+            s.TEMP_LIMIT,
+            s.TEMP_LIMIT_BEGIN_DATE,
+            s.TEMP_LIMIT_END_DATE,
+            s.CASH_LIMIT_RT,
+            s.OVRLMT_RATE,
+            s.LOAN_LIMIT_RT,
+            s.CURR_BAL,
+            s.CASH_BAL,
+            s.PRINCIPAL_BAL,
+            s.LOAN_BAL,
+            s.QUAL_GRACE_BAL,
+            s.ACTUAL_PAYMENT_AMT,
+            s.CHARGE_OFF_AMT,
+            s.UNSTMT_BAL,
+            s.CTD_REAIL_PRIN_BAL,
+            s.STMT_REAIL_PRIN_BAL,
+            s.CTD_CASH_PRIN_BAL,
+            s.STMT_CASH_PRIN_BAL,
+            s.CTD_LOAN_PRIN_BAL,
+            s.STMT_LOAN_PRIN_BAL,
+            s.LARGE_LOAN_BAL_XFROUT,
+            s.UNMATCH_DB_AMT,
+            s.UNMATCH_CR_AMT,
+            s.OVERLIMIT_AMT,
+            s.REMAIN_GRACE_BAL,
+            s.GRACE_DAYS_FULL_IND,
+            s.ORG_NUM,
+            s.BILLING_CYCLE,
+            #{optDate},
+            #{optDate}
+        )
+    WHEN MATCHED
+        THEN
+        UPDATE
+        set a.ACCT_NUM=s.ACCT_NUM,
+            a.CUSTOMER_NUM=s.CUSTOMER_NUM,
+            a.CC_CUSTOMER_NUM=s.CC_CUSTOMER_NUM,
+            a.CUSTOMER_NAME=s.CUSTOMER_NAME,
+            a.CERT_TYPE=s.CERT_TYPE,
+            a.CERT_NUM=s.CERT_NUM,
+            a.PRODUCT_NUM=s.PRODUCT_NUM,
+            a.CURRENCY_CD=s.CURRENCY_CD,
+            a.CREDIT_LIMIT=s.CREDIT_LIMIT,
+            a.TEMP_LIMIT=s.TEMP_LIMIT,
+            a.TEMP_LIMIT_BEGIN_DATE=s.TEMP_LIMIT_BEGIN_DATE,
+            a.TEMP_LIMIT_END_DATE=s.TEMP_LIMIT_END_DATE,
+            a.CASH_LIMIT_RT=s.CASH_LIMIT_RT,
+            a.OVRLMT_RATE=s.OVRLMT_RATE,
+            a.LOAN_LIMIT_RT=s.LOAN_LIMIT_RT,
+            a.CURR_BAL=s.CURR_BAL,
+            a.CASH_BAL=s.CASH_BAL,
+            a.PRINCIPAL_BAL=s.PRINCIPAL_BAL,
+            a.LOAN_BAL=s.LOAN_BAL,
+            a.QUAL_GRACE_BAL=s.QUAL_GRACE_BAL,
+            a.ACTUAL_PAYMENT_AMT=s.ACTUAL_PAYMENT_AMT,
+            a.CHARGE_OFF_AMT=s.CHARGE_OFF_AMT,
+            a.UNSTMT_BAL=s.UNSTMT_BAL,
+            a.CTD_REAIL_PRIN_BAL=s.CTD_REAIL_PRIN_BAL,
+            a.STMT_REAIL_PRIN_BAL=s.STMT_REAIL_PRIN_BAL,
+            a.CTD_CASH_PRIN_BAL=s.CTD_CASH_PRIN_BAL,
+            a.STMT_CASH_PRIN_BAL=s.STMT_CASH_PRIN_BAL,
+            a.CTD_LOAN_PRIN_BAL=s.CTD_LOAN_PRIN_BAL,
+            a.STMT_LOAN_PRIN_BAL=s.STMT_LOAN_PRIN_BAL,
+            a.LARGE_LOAN_BAL_XFROUT=s.LARGE_LOAN_BAL_XFROUT,
+            a.UNMATCH_DB_AMT=s.UNMATCH_DB_AMT,
+            a.UNMATCH_CR_AMT=s.UNMATCH_CR_AMT,
+            a.OVERLIMIT_AMT=s.OVERLIMIT_AMT,
+            a.REMAIN_GRACE_BAL=s.REMAIN_GRACE_BAL,
+            a.GRACE_DAYS_FULL_IND=s.GRACE_DAYS_FULL_IND,
+            a.ORG_NUM=s.ORG_NUM,
+            a.BILLING_CYCLE=s.BILLING_CYCLE,
+            a.UPDATE_TIME=#{optDate}
+    </update>
+</mapper>

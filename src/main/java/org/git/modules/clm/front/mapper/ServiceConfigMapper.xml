@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.front.mapper.ServiceConfigMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="serviceConfigResultMap" type="org.git.modules.clm.front.entity.ServiceConfig">
+        <result column="id" property="id"/>
+        <result column="status" property="status"/>
+        <result column="create_dept" property="createDept"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="terminal_code" property="terminalCode"/>
+        <result column="service_role" property="serviceRole"/>
+        <result column="service_code" property="serviceCode"/>
+        <result column="service_name" property="serviceName"/>
+        <result column="service_adapter" property="serviceAdapter"/>
+        <result column="invoke_mode" property="invokeMode"/>
+        <result column="invoke_api" property="invokeApi"/>
+        <result column="encode_mode" property="encodeMode"/>
+        <result column="message_style" property="messageStyle"/>
+        <result column="timeout" property="timeout"/>
+        <result column="transaction_mode" property="transactionMode"/>
+        <result column="version" property="version"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+
+    <select id="selectServiceConfigPage" resultMap="serviceConfigResultMap">
+        select * from tb_front_service_config where is_deleted = 0
+    </select>
+
+</mapper>

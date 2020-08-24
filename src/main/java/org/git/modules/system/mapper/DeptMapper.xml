@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.system.mapper.DeptMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="deptResultMap" type="org.git.modules.system.entity.Dept">
+        <id column="id" property="id"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="parent_name" property="parentId"/>
+        <result column="dept_name" property="deptName"/>
+        <result column="full_name" property="fullName"/>
+        <result column="ancestors" property="ancestors"/>
+        <result column="dept_category" property="deptCategory"/>
+        <result column="dept_level" property="deptLevel"/>
+        <result column="sort" property="sort"/>
+        <result column="remark" property="remark"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+    <resultMap id="deptVoResultMap" type="org.git.modules.system.vo.DeptVO">
+        <id column="id" property="id"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="parent_name" property="parentName"/>
+        <result column="dept_name" property="deptName"/>
+        <result column="full_name" property="fullName"/>
+        <result column="ancestors" property="ancestors"/>
+        <result column="dept_category" property="deptCategory"/>
+        <result column="dept_level" property="deptLevel"/>
+        <result column="sort" property="sort"/>
+        <result column="remark" property="remark"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+    <resultMap id="treeNodeResultMap" type="org.git.modules.system.entity.DeptTreeNode">
+        <id column="id" property="id"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="title" property="title"/>
+        <result column="value" property="value"/>
+        <result column="key" property="key"/>
+        <result column="dept_category" property="deptCategory"/>
+        <result column="dept_level" property="deptLevel"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="baseColumnList">
+        select
+        id, parent_id, dept_name, full_name, sort, remark, is_deleted
+    </sql>
+
+    <select id="selectDeptPage" resultMap="deptVoResultMap">
+        select a.id,a.parent_id,b.dept_name as parent_name,a.dept_name,a.full_name,a.dept_level,a.org_type,a.org_address,a.aera_code,a.tel_num,
+        a.zip_code,a.sort from chain_dept a left join chain_dept b on a.parent_id = b.id
+        where a.is_deleted = 0    and a.ORG_TYPE IN ('1','2','3','4','5')
+        <if test="deptIds != null and deptIds.length >0">
+        and (
+        <foreach collection="deptIds" item="deptId" separator="or">a.ancestors like CONCAT(CONCAT('%,',#{deptId}),',%')</foreach>
+        )
+        </if>
+        <if test="dept.deptName != null and dept.deptName != ''">
+            and a.dept_name like CONCAT(CONCAT('%',#{dept.deptName}),'%')
+        </if>
+        <if test="dept.fullName != null and dept.fullName != ''">
+            and a.full_name like CONCAT(CONCAT('%',#{dept.fullName}),'%')
+        </if>
+        <if test="dept.orgType != null and dept.orgType != ''">
+            and a.org_type = #{dept.orgType}
+        </if>
+        order by a.sort
+
+<!--        <if test="dept.deptLevel != null and dept.deptLevel == '1'.toString()">-->
+<!--            and a.ORG_TYPE IN ('1','2','3')-->
+<!--        </if>-->
+<!--        <if test="dept.deptLevel != null and dept.deptLevel == '2'.toString()">-->
+<!--            and (a.parent_id = #{dept.parentId} or a.id = #{dept.parentId} )-->
+<!--        </if>-->
+<!--        <if test="dept.deptLevel != null and dept.deptLevel == '3'.toString()">-->
+<!--            and a.id = #{dept.parentId}-->
+<!--        </if>-->
+
+
+
+    </select>
+
+    <select id="tree" resultMap="treeNodeResultMap">
+        select id, parent_id, dept_name as title, id as "value", id as "key",dept_category from chain_dept where
+        is_deleted = 0
+        <if test="_parameter!=null">
+            and tenant_id = #{_parameter}
+        </if>
+    </select>
+
+    <select id="treeManage" resultMap="treeNodeResultMap">
+        select id, parent_id, dept_name as title, id as "value", id as "key",dept_category,DEPT_LEVEL from chain_dept
+        where
+        <if test="isManage == '1'.toString()">
+        is_deleted = 0 and ORG_TYPE IN ('1','2','3')
+        </if>
+        <if test="isManage != '1'.toString()">
+            is_deleted = 0 and ORG_TYPE IN ('1','2','3','4','5')
+        </if>
+        <if test="orgNum!=null">
+            and ANCESTORS like CONCAT(CONCAT('%',#{orgNum}),'%')
+        </if>
+    </select>
+
+    <select id="getDeptNames" resultType="java.lang.String">
+        SELECT
+        dept_name
+        FROM
+        chain_dept
+        WHERE
+        id IN
+        <foreach collection="array" item="ids" index="index" open="(" close=")" separator=",">
+            #{ids}
+        </foreach>
+        and is_deleted = 0
+    </select>
+
+    <select id="upperDeptByType" resultMap="deptResultMap">
+        with temptab(id,parent_id,dept_level,is_deleted) as
+            (
+            select id,parent_id,dept_level,is_deleted
+                from chain_dept where id = #{id}
+            union all
+            select sub.id,sub.parent_id,sub.dept_level,sub.is_deleted
+                from temptab ,chain_dept sub where temptab.parent_id = sub.id
+            )
+            select id,parent_id,dept_level,is_deleted from temptab
+        where dept_level = #{deptLevel}
+            and is_deleted = 0
+    </select>
+</mapper>

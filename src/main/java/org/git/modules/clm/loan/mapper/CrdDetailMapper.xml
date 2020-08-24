@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.loan.mapper.CrdDetailMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="crdDetailResultMap" type="org.git.modules.clm.loan.entity.CrdDetail">
+        <id column="CRD_DETAIL_NUM" property="crdDetailNum"/>
+        <result column="CRD_MAIN_NUM" property="crdMainNum"/>
+        <result column="CRD_DETAIL_PRD" property="crdDetailPrd"/>
+        <result column="CRD_GRANT_ORG_NUM" property="crdGrantOrgNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CRD_ADMIT_FLAG" property="crdAdmitFlag"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="EXCHANGE_RATE" property="exchangeRate"/>
+        <result column="BEGIN_DATE" property="beginDate"/>
+        <result column="END_DATE" property="endDate"/>
+        <result column="LIMIT_CREDIT" property="limitCredit"/>
+        <result column="LIMIT_AVI" property="limitAvi"/>
+        <result column="LIMIT_USED" property="limitUsed"/>
+        <result column="EXP_CREDIT" property="expCredit"/>
+        <result column="EXP_USED" property="expUsed"/>
+        <result column="EXP_AVI" property="expAvi"/>
+        <result column="LIMIT_PRE" property="limitPre"/>
+        <result column="EXP_PRE" property="expPre"/>
+        <result column="LIMIT_EARMARK" property="limitEarmark"/>
+        <result column="EARMARK_BEGIN_DATE" property="earmarkBeginDate"/>
+        <result column="EARMARK_END_DATE" property="earmarkEndDate"/>
+        <result column="LIMIT_FROZEN" property="limitFrozen"/>
+        <result column="EXP_FROZEN" property="expFrozen"/>
+        <result column="IS_CYCLE" property="isCycle"/>
+        <result column="IS_MIX" property="isMix"/>
+        <result column="MIXREMARK" property="mixremark"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CLOSE_DATE" property="closeDate"/>
+        <result column="CLOSE_REASON" property="closeReason"/>
+        <result column="IS_CONTINUE" property="isContinue"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="TRAN_SYSTEM" property="tranSystem"/>
+    </resultMap>
+
+
+    <select id="selectCrdDetailPage" resultMap="crdDetailResultMap">
+        select * from TB_CRD_DETAIL
+    </select>
+
+    <select id="listCrdDetailOrder" resultMap="crdDetailResultMap">
+        SELECT
+            *
+        FROM
+            TB_CRD_DETAIL
+        WHERE
+            CRD_DETAIL_PRD IN(
+            <foreach collection="crdDetailPrds" item="crdDetailPrd" separator=",">
+                #{crdDetailPrd}
+            </foreach>)
+        AND CRD_GRANT_ORG_NUM = #{crdGrantOrgNum}
+        AND CUSTOMER_NUM = #{customerNum}
+        ORDER BY INSTR(''|| ''
+             <foreach collection="crdDetailPrds" item="crdDetailPrd" open="||" separator="||','||" close="||">
+                #{crdDetailPrd}
+             </foreach>
+            ''||'', CRD_DETAIL_PRD)
+    </select>
+
+    <select id="toInsertCrdDetail" resultMap="crdDetailResultMap">
+        SELECT
+            a.crd_detail_num,
+            #{crdMainNum} crd_main_num,
+            a.crd_detail_prd,
+            a.crd_grant_org_num,
+            a.customer_num,
+            b.crd_admit_flag,
+            a.crd_currency_cd,
+            b.exchange_rate,
+            c.begin_date as begin_date,
+            c.end_date as end_date,
+            a.crd_detail_amt as limit_credit,
+            a.crd_detail_amt-(
+            CASE
+            WHEN b.limit_used IS NOT NULL
+            THEN b.limit_used
+            ELSE 0
+            END ) AS limit_avi,
+            b.limit_used,
+            b.exp_credit,
+            b.exp_used,
+            b.exp_avi,
+            b.limit_pre,
+            b.exp_pre,
+            b.limit_earmark,
+            b.earmark_begin_date,
+            b.earmark_end_date,
+            b.limit_frozen,
+            b.exp_frozen,
+            b.is_cycle,
+            b.is_mix,
+            b.mixremark,
+            case when b.create_time is not null then b.create_time else a.create_time end as create_time,
+            a.update_time,
+            b.close_date,
+            b.close_reason,
+            b.is_continue,
+            a.user_num,
+            b.org_num,
+            #{tranSystem} as tran_system
+        FROM
+            tb_crd_granting_serial a
+        LEFT JOIN
+            tb_crd_detail b
+        ON
+            a.crd_detail_num = b.crd_detail_num
+        LEFT JOIN
+            tb_crd_main c
+        ON b.crd_main_num = c.crd_main_num
+        WHERE
+            1=1
+        AND a.granting_serial_id IN
+        <foreach collection="grantingSerialIds" item="grantingSerialId" open="(" separator="," close=")">
+            #{grantingSerialId}
+        </foreach>
+    </select>
+
+    <select id="findCrdDetailPage" resultType="org.git.modules.clm.loan.vo.CrdDetailVO">
+        select
+            d.ORG_NUM,
+            d.CRD_DETAIL_NUM,
+            cp.CRD_PRODUCT_NUM as CRD_PRODUCT_NUM,
+            cp.PRODUCT_NUM as PRODUCT_NUM,
+            d.CURRENCY_CD,
+            d.LIMIT_CREDIT,
+            d.LIMIT_AVI,
+            d.LIMIT_USED,
+            d.USER_NUM
+        from
+            tb_crd_detail d
+        left join
+            tb_par_crd c
+        on
+            c.crd_product_num=d.crd_detail_prd
+        left join
+            TB_PAR_CRD_PRODUCT cp
+        on
+            c.crd_product_num=cp.crd_product_num
+        left join
+            TB_PAR_PRODUCT p
+        on
+            cp.product_num=p.PRODUCT_NUM
+    </select>
+
+    <!--  二级额度明细  -->
+    <select id="selectCrdDetailFromCrdMainNum" resultType="org.git.modules.clm.loan.vo.CrdDetailVO">
+        select
+            t1.*,t2.CRD_PRODUCT_NAME,p.product_name
+        from
+            TB_CRD_DETAIL t1,TB_PAR_CRD t2,CHAIN_DEPT t3,TB_PAR_CRD_PRODUCT cp, TB_PAR_PRODUCT p
+        where
+            t1.CRD_DETAIL_PRD = t2.CRD_PRODUCT_NUM
+        and
+            t1.CUSTOMER_NUM = #{customerNum}
+        and
+            t1.ORG_NUM = t3.ID
+        and  t2.crd_product_num=cp.crd_product_num
+        and  cp.product_num =p.PRODUCT_Num
+        and
+            t3.ANCESTORS like CONCAT(CONCAT('%', #{orgNum}), '%')
+        <if test="crdMainNum!=null and crdMainNum!=''">
+            and t1.CRD_MAIN_NUM = #{crdMainNum}
+        </if>
+    </select>
+
+    <!-- 担保额度明细 -->
+    <select id="selectGuaranteeCrdDetail" resultType="org.git.modules.clm.loan.vo.CrdDetailVO">
+        select
+            t1.*, t2.CRD_PRODUCT_NAME
+        from
+            TB_CRD_DETAIL t1
+        left join TB_PAR_CRD t2 on t1.CRD_DETAIL_PRD = t2.CRD_PRODUCT_NUM
+        left join CHAIN_DEPT t3 on t1.ORG_NUM = t3.ID
+        where
+            t1.CUSTOMER_NUM = #{customerNum}
+        and
+            t3.ANCESTORS like  CONCAT(CONCAT('%',#{orgNum}),'%')
+        and
+            t2.CRD_PRODUCT_TYPE = '1'
+    </select>
+
+    <!-- 预占用 修改预占用额度，可用额度 -->
+    <update id="updateDetailForPre">
+        UPDATE
+            tb_crd_detail d
+        SET
+            limit_pre = case when limit_pre is null then 0 else limit_pre end+
+            (
+                SELECT
+                    limit_credit_amt
+                FROM
+                    tb_crd_apply_serial s
+                WHERE
+                    d.crd_grant_org_num=s.crd_grant_org_num
+                    and d.customer_num=s.customer_num
+                    and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                        <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                            #{serialId}
+                        </foreach>
+            ),
+             limit_avi = limit_avi-
+            (
+                SELECT
+                    limit_credit_amt
+                FROM
+                    tb_crd_apply_serial s
+                WHERE
+                    d.crd_grant_org_num=s.crd_grant_org_num
+                    and d.customer_num=s.customer_num
+                    and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                        <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                            #{serialId}
+                        </foreach>
+            ),
+             update_time = (
+                SELECT
+                    create_time
+                FROM
+                    tb_crd_apply_serial s
+                WHERE
+                    d.crd_grant_org_num=s.crd_grant_org_num
+                    and d.customer_num=s.customer_num
+                    and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                        <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                            #{serialId}
+                        </foreach>
+             )
+            WHERE exists (select 1 from tb_crd_apply_serial s where  d.crd_grant_org_num=s.crd_grant_org_num
+                and d.customer_num=s.customer_num
+                and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                    <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                        #{serialId}
+                    </foreach>
+            )
+    </update>
+
+    <!-- 预占用撤销 修改预占用额度，可用额度 -->
+    <update id="updateDetailForPreCancle">
+        UPDATE
+            tb_crd_detail d
+        SET
+            limit_pre = case when limit_pre is null then 0 else limit_pre end-
+            (
+                SELECT
+                    limit_credit_amt
+                FROM
+                    tb_crd_apply_serial s
+                WHERE
+                    d.crd_grant_org_num=s.crd_grant_org_num
+                    and d.customer_num=s.customer_num
+                    and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                        <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                            #{serialId}
+                        </foreach>
+            ),
+            limit_avi = limit_avi+
+            (
+                SELECT
+                    limit_credit_amt
+                FROM
+                    tb_crd_apply_serial s
+                WHERE
+                    d.crd_grant_org_num=s.crd_grant_org_num
+                    and d.customer_num=s.customer_num
+                    and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                        <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                            #{serialId}
+                        </foreach>
+            ),
+            update_time = (
+                SELECT
+                    create_time
+                FROM
+                    tb_crd_apply_serial s
+                WHERE
+                    d.crd_grant_org_num=s.crd_grant_org_num
+                    and d.customer_num=s.customer_num
+                    and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                        <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                            #{serialId}
+                        </foreach>
+            )
+        WHERE exists (select 1 from tb_crd_apply_serial s where  d.crd_grant_org_num=s.crd_grant_org_num
+        and d.customer_num=s.customer_num
+        and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+            <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                #{serialId}
+            </foreach>
+        )
+    </update>
+
+    <!-- 占用、恢复撤销 修改预占用额度，可用额度 -->
+    <update id="updateDetailForUsed">
+        UPDATE
+            tb_crd_detail d
+        SET
+            limit_pre = case when limit_pre is null then 0 else limit_pre end-
+            (
+                SELECT
+                    limit_credit_amt
+                FROM
+                    tb_crd_apply_serial s
+                WHERE
+                    d.crd_grant_org_num=s.crd_grant_org_num
+                    and d.customer_num=s.customer_num
+                    and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                        <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                            #{serialId}
+                        </foreach>
+            ),
+            limit_used = limit_used+
+            (
+                SELECT
+                    limit_credit_amt
+                FROM
+                    tb_crd_apply_serial s
+                WHERE
+                    d.crd_grant_org_num=s.crd_grant_org_num
+                    and d.customer_num=s.customer_num
+                    and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                    <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                        #{serialId}
+                    </foreach>
+            ),
+            update_time = (
+                SELECT
+                    create_time
+                FROM
+                    tb_crd_apply_serial s
+                WHERE
+                    d.crd_grant_org_num=s.crd_grant_org_num
+                    and d.customer_num=s.customer_num
+                    and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                        <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                            #{serialId}
+                        </foreach>
+            )
+        WHERE exists (select 1 from tb_crd_apply_serial s where  d.crd_grant_org_num=s.crd_grant_org_num
+            and d.customer_num=s.customer_num
+            and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                    #{serialId}
+                </foreach>
+        )
+    </update>
+
+    <!-- 占用撤销、恢复 修改预占用额度，可用额度 -->
+    <update id="updateDetailForUsedCancle">
+        UPDATE
+            tb_crd_detail d
+        SET
+            limit_pre = case when limit_pre is null then 0 else limit_pre end-
+            (
+                SELECT
+                    limit_credit_amt
+                FROM
+                    tb_crd_apply_serial s
+                WHERE
+                    d.crd_grant_org_num=s.crd_grant_org_num
+                    and d.customer_num=s.customer_num
+                    and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                        <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                            #{serialId}
+                        </foreach>
+            ),
+            limit_used = limit_used+
+            (
+                SELECT
+                    limit_credit_amt
+                FROM
+                    tb_crd_apply_serial s
+                WHERE
+                    d.crd_grant_org_num=s.crd_grant_org_num
+                    and d.customer_num=s.customer_num
+                    and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                        <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                            #{serialId}
+                        </foreach>
+            ),
+            update_time = (
+                SELECT
+                    create_time
+                FROM
+                    tb_crd_apply_serial s
+                WHERE
+                    d.crd_grant_org_num=s.crd_grant_org_num
+                    and d.customer_num=s.customer_num
+                    and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                        <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                            #{serialId}
+                        </foreach>
+            )
+        WHERE exists (select 1 from tb_crd_apply_serial s where  d.crd_grant_org_num=s.crd_grant_org_num
+            and d.customer_num=s.customer_num
+            and d.crd_detail_prd=s.crd_detail_prd and s.serial_id in
+                <foreach collection="serialIds" item="serialId" open="(" separator="," close=")">
+                    #{serialId}
+                </foreach>
+        )
+    </update>
+
+    <select id="listByUniAndStatu" resultMap="crdDetailResultMap">
+        SELECT
+            d.crd_detail_num
+        FROM
+            tb_crd_detail d
+        INNER JOIN
+            <foreach collection="crdDetails" item="crdDetail" open="(" separator="UNION" close=")">
+                SELECT
+                    #{crdDetail.crdDetailPrd} AS crd_detail_prd,
+                    #{crdDetail.crdGrantOrgNum} AS crd_grant_org_num,
+                    #{crdDetail.crdCustomerNum} AS customer_num
+                FROM
+                sysibm.sysdummy1
+            </foreach>
+        ON
+            d.crd_detail_prd=b.crd_detail_prd
+            AND d.crd_grant_org_num=b.crd_grant_org_num
+            AND d.customer_num=b.customer_num
+        WHERE
+            d.crd_admit_flag = #{crdAdmitFlag}
+    </select>
+
+    <!--查询第三方额度台账额度明细信息-->
+    <select id="findThirdPartyCrdDetailPage" resultType="org.git.modules.clm.loan.vo.CrdDetailVO">
+            select
+             a.org_num ,          -- 经办机构
+             a.crd_detail_num ,   -- 额度编号
+             a.crd_detail_prd ,   -- 额度产品
+             a.CURRENCY_CD ,      -- 币种
+             a.LIMIT_CREDIT ,     -- 第三方额度,
+             a.LIMIT_USED ,       -- 已用额度,
+             a.LIMIT_AVI ,        -- 可用额度,
+             a.EXP_CREDIT,        -- 授信敞口,
+             a.EXP_USED ,         -- 已用敞口,
+             a.EXP_AVI ,          -- 可用敞口
+             p.CRD_PRODUCT_NAME
+        from  tb_crd_detail a,
+              tb_par_crd p,
+              CHAIN_DEPT b
+        where a.crd_detail_prd=p.CRD_PRODUCT_NUM
+        and a.ORG_NUM=b.ID
+        and  a.CUSTOMER_NUM = #{customerNum}
+        and  b.ANCESTORS like CONCAT(CONCAT('%', #{orgNum}), '%')
+    </select>
+</mapper>

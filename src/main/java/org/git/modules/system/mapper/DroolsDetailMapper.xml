@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.system.mapper.DroolsDetailMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="droolsDetailResultMap" type="org.git.modules.system.entity.DroolsDetail">
+        <result column="id" property="id"/>
+        <result column="rule_id" property="ruleId"/>
+        <result column="rule_name" property="ruleName"/>
+        <result column="rule_priority" property="rulePriority"/>
+        <result column="rule_condition" property="ruleCondition"/>
+        <result column="rule_expression" property="ruleExpression"/>
+        <result column="expression_cn" property="expressionCn"/>
+        <result column="condition_cn" property="conditionCn"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+</mapper>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmConfigHisMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="rcmConfigurationInfoHisResultMap" type="org.git.modules.clm.rcm.entity.RcmConfigHis">
+        <id column="HIS_ID" jdbcType="VARCHAR" property="hisId" />
+        <result column="QUOTA_NUM" jdbcType="VARCHAR" property="quotaNum" />
+        <result column="QUOTA_NAME" jdbcType="VARCHAR" property="quotaName" />
+        <result column="QUOTA_INDEX_NUM" jdbcType="VARCHAR" property="quotaIndexNum" />
+        <result column="USE_ORG_NUM" jdbcType="VARCHAR" property="useOrgNum" />
+        <result column="QUOTA_USED_AMT" jdbcType="DECIMAL" property="quotaUsedAmt" />
+        <result column="QUOTA_FREE_AMT" jdbcType="DECIMAL" property="quotaFreeAmt" />
+        <result column="QUOTA_USED_RATIO" jdbcType="DECIMAL" property="quotaUsedRatio" />
+        <result column="QUOTA_FREE_RATIO" jdbcType="DECIMAL" property="quotaFreeRatio" />
+        <result column="QUOTA_TOTAL_SUM" jdbcType="DECIMAL" property="quotaTotalSum" />
+        <result column="QUOTA_TOTAL_TYPE" jdbcType="VARCHAR" property="quotaTotalType" />
+        <result column="START_DATE" jdbcType="VARCHAR" property="startDate" />
+        <result column="INVALID_DATE" jdbcType="VARCHAR" property="invalidDate" />
+        <result column="QUOTA_STATE" jdbcType="VARCHAR" property="quotaState" />
+        <result column="HIS_FREQUENCY_A" jdbcType="DECIMAL" property="hisFrequencyA" />
+        <result column="HIS_FREQUENCY_B" jdbcType="DECIMAL" property="hisFrequencyB" />
+        <result column="HIS_FREQUENCY_C" jdbcType="DECIMAL" property="hisFrequencyC" />
+        <result column="HIS_FREQUENCY" jdbcType="DECIMAL" property="hisFrequency" />
+        <result column="EXPLAIN_INFO" jdbcType="VARCHAR" property="explainInfo" />
+        <result column="INSPECT_USER_NUM" jdbcType="VARCHAR" property="inspectUserNum" />
+        <result column="INSPECT_ORG_NUM" jdbcType="VARCHAR" property="inspectOrgNum" />
+        <result column="INSPECT_TIME" jdbcType="TIMESTAMP" property="inspectTime" />
+        <result column="APPLY_STATE" jdbcType="VARCHAR" property="applyState" />
+        <result column="USER_NUM" jdbcType="VARCHAR" property="userNum" />
+        <result column="ORG_NUM" jdbcType="VARCHAR" property="orgNum" />
+        <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        quota_num, quota_name, quota_index_num, use_ORG_NUM, quota_used_amt, quota_free_amt,
+        quota_used_ratio, quota_free_ratio, quota_total_sum, quota_total_type, start_date,
+        invalid_date, quota_state, his_frequency_a, his_frequency_b, his_frequency_c, his_frequency,
+        explain_info, user_num, org_num, create_time, update_time, inspect_user_num, inspect_org_num,
+        inspect_time, apply_state
+    </sql>
+
+    <select id="selectRcmConfigHisPage" resultMap="rcmConfigurationInfoHisResultMap">
+        select
+            *
+        from
+            TB_RCM_CONFIG_HIS h
+        where
+            h.quota_num = #{quotaNum}
+        order by h.update_time desc
+    </select>
+
+    <insert id="moveToHis">
+       insert
+        into
+            TB_RCM_CONFIG_HIS
+            (his_id,<include refid="Base_Column_List"/>)
+        select
+            #{rcmConfigurationInfoHis.hisId},<include refid="Base_Column_List"/>
+        from
+            TB_RCM_CONFIG
+        where quota_num = #{rcmConfigurationInfoHis.quotaNum}
+    </insert>
+
+</mapper>

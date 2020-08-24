@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.customer.mapper.CsmPhoneInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="csmPhoneInfoResultMap" type="org.git.modules.clm.customer.entity.CsmPhoneInfo">
+        <id column="phone_id" property="phoneId"/>
+        <result column="customer_num" property="customerNum"/>
+        <result column="customer_num" property="customerNum"/>
+        <result column="conn_type" property="connType"/>
+        <result column="inter_code" property="interCode"/>
+        <result column="inland_code" property="inlandCode"/>
+        <result column="tel_number" property="telNumber"/>
+        <result column="exten_num" property="extenNum"/>
+        <result column="is_check_flag" property="isCheckFlag"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectCsmPhoneInfoPage" resultMap="csmPhoneInfoResultMap">
+        select * from TB_CSM_PHONE_INFO where is_deleted = 0
+    </select>
+
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.credit.mapper.TbCrdSummaryEventMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="tbCrdSummaryEventResultMap" type="org.git.modules.clm.credit.entity.TbCrdSummaryEvent">
+        <id column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="TRAN_SEQ_SN" property="tranSeqSn"/>
+        <result column="OP_TYPE" property="opType"/>
+        <result column="SUMMARY_NUM" property="summaryNum"/>
+        <result column="SUMMARY_NUM" property="summaryNum"/>
+        <result column="CONTRACT_NUM" property="contractNum"/>
+        <result column="APPROVE_ID" property="approveId"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="CUSTOMER_NUM" property="customerNum"/>
+        <result column="PRODUCT_NUM" property="productNum"/>
+        <result column="CURRENCY_CD" property="currencyCd"/>
+        <result column="EXCHANGE_RATE" property="exchangeRate"/>
+        <result column="SUMMARY_AMT" property="summaryAmt"/>
+        <result column="SUMMARY_BAL" property="summaryBal"/>
+        <result column="LAST_SUMMARY_BAL" property="lastSummaryBal"/>
+        <result column="BEGIN_DATE" property="beginDate"/>
+        <result column="END_DATE" property="endDate"/>
+        <result column="SUMMARY_STATUS" property="summaryStatus"/>
+        <result column="CLASSIFY_RESULT" property="classifyResult"/>
+        <result column="INDUSTRY" property="industry"/>
+        <result column="GUARANTEE_TYPE" property="guaranteeType"/>
+        <result column="MAIN_GUARANTEE_TYPE" property="mainGuaranteeType"/>
+        <result column="DEPOSIT_RATIO" property="depositRatio"/>
+        <result column="BILL_NUM" property="billNum"/>
+        <result column="BILL_TYPE" property="billType"/>
+        <result column="PAYEE_NAME" property="payeeName"/>
+        <result column="PAYEE_ACCT" property="payeeAcct"/>
+        <result column="PAYEE_BANK_NUM" property="payeeBankNum"/>
+        <result column="PAYEE_BANK_NAME" property="payeeBankName"/>
+        <result column="PAY_NAME" property="payName"/>
+        <result column="PAY_ACCT" property="payAcct"/>
+        <result column="DRAWER_NAME" property="drawerName"/>
+        <result column="DRAWER_ACCT" property="drawerAcct"/>
+        <result column="DRAWER_BANK_NUM" property="drawerBankNum"/>
+        <result column="DRAWER_BANK_NAME" property="drawerBankName"/>
+        <result column="BILL_STATUS" property="billStatus"/>
+        <result column="LOAN_ORG" property="loanOrg"/>
+        <result column="TRAN_DATE" property="tranDate"/>
+        <result column="TRAN_SYSTEM" property="tranSystem"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+
+    <select id="selectTbCrdSummaryEventPage" resultMap="tbCrdSummaryEventResultMap">
+        select * from TB_CRD_SUMMARY_EVENT where is_deleted = 0
+    </select>
+
+</mapper>

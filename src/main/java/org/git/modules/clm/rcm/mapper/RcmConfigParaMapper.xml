@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmConfigParaMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="rcmConfigurationParaResultMap" type="org.git.modules.clm.rcm.entity.RcmConfigPara">
+        <id column="SUB_PARA_NUM" jdbcType="VARCHAR" property="subParaNum" />
+        <result column="QUOTA_NUM" jdbcType="VARCHAR" property="quotaNum" />
+        <result column="QUOTA_INDEX_NUM" jdbcType="VARCHAR" property="quotaIndexNum" />
+        <result column="USE_ORG_NUM" jdbcType="VARCHAR" property="useOrgNum" />
+        <result column="QUOTA_LEVEL" jdbcType="VARCHAR" property="quotaLevel" />
+        <result column="QUOTA_CONTROL_AMT" jdbcType="DECIMAL" property="quotaControlAmt" />
+        <result column="QUOTA_CONTROL_RATIO" jdbcType="DECIMAL" property="quotaControlRatio" />
+        <result column="QUOTA_CONTROL_TYPE" jdbcType="VARCHAR" property="quotaControlType" />
+        <result column="CONTROL_NODE" jdbcType="VARCHAR" property="controlNode" />
+        <result column="NODE_MEASURE" jdbcType="VARCHAR" property="nodeMeasure" />
+        <result column="MEASURE_LEVEL" jdbcType="VARCHAR" property="measureLevel" />
+        <result column="EXPLAIN_INFO" jdbcType="VARCHAR" property="explainInfo" />
+        <result column="USER_NUM" jdbcType="VARCHAR" property="userNum" />
+        <result column="ORG_NUM" jdbcType="VARCHAR" property="orgNum" />
+        <result column="UPDATE_TIME" jdbcType="DATE" property="updateTime" />
+        <result column="CREATE_TIME" jdbcType="DATE" property="createTime" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        sub_para_num, quota_num, quota_index_num, use_org_num, quota_level, quota_control_amt,
+        quota_control_ratio,quota_control_type, control_node, node_measure, measure_level, explain_info, user_num,
+        org_num, create_time, update_time
+    </sql>
+
+
+    <select id="selectRcmControlPage" resultMap="rcmConfigurationParaResultMap">
+        select <include refid="Base_Column_List"/> from TB_RCM_CONFIG_PARA
+    </select>
+
+    <select id="selectOneRcmControl" parameterType="string" resultType="org.git.modules.clm.rcm.vo.RcmConfigParaVO">
+        select
+            quota_index_num,
+            use_org_num,
+            quota_level,
+            listagg(sub_para_num, ',') within group(order by quota_level)  as sub_para_num,
+            min(quota_num)                                                 as quota_num,
+            min(quota_control_amt)                                         as quota_control_amt,
+            min(quota_control_ratio)                                       as quota_control_ratio,
+            min(quota_control_type)                                        as quota_control_type,
+            min(node_measure)                                              as node_measure,
+            listagg(measure_level, ',') within group(order by quota_level) as measure_level,
+            min(explain_info)                                              as explain_info,
+            min(user_num)                                                  as user_num,
+            min(org_num)                                                   as org_num,
+            min(update_time)                                               as update_time,
+            listagg(control_node, ',') within group(order by quota_level)  as control_node
+        from
+            TB_RCM_CONFIG_PARA
+        where
+            quota_num = #{quotaNum}
+        group by
+            quota_index_num,
+            quota_level,
+            use_org_num
+    </select>
+
+    <insert id="addRcmControl">
+        insert into TB_RCM_CONFIG_PARA(<include refid="Base_Column_List"/>)
+            select item.* from
+            <foreach collection="rcmConfigurationParas" item="item" index="index" open="(" separator=" union all " close=")">
+                SELECT
+                    #{item.subParaNum},
+                    #{item.quotaNum},
+                    #{item.quotaIndexNum},
+                    #{item.useOrgNum},
+                    #{item.quotaLevel},
+                    #{item.quotaControlAmt},
+                    #{item.quotaControlRatio},
+                    #{item.quotaControlType},
+                    #{item.controlNode},
+                    #{item.nodeMeasure},
+                    #{item.measureLevel},
+                    #{item.explainInfo},
+                    #{item.userNum},
+                    #{item.orgNum},
+                    #{item.createTime},
+                    #{item.updateTime}
+                from SYSIBM.SYSDUMMY1
+            </foreach> item
+    </insert>
+</mapper>

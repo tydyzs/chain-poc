@@ -1,0 +1,45 @@
+package droolRule ;
+import org.git.modules.drools.entity.CreditApproveParam;
+dialect  "java"
+// "近15日内征信查询数大于等于6"
+rule "rule1"
+    salience 3
+    when creditapproveparam : CreditApproveParam(queryTimes >= 6)
+    then
+        creditapproveparam.exec3();
+end
+// "年龄超过35岁且婚姻状况为离异"
+rule "rule2"
+    salience 1
+    when creditapproveparam : CreditApproveParam(age >= 35 && marriage == "1")
+    then
+        creditapproveparam.exec2();
+end
+// "贷款五级分类有为后4类"
+rule "rule3"
+    salience 4
+    when creditapproveparam : CreditApproveParam(( loanGzNums >= 1 ) || ( loanCjNums >= 1 ) || ( loanKyNums >= 1 ) || ( loanSsNums >= 1 ))
+    then
+        creditapproveparam.exec3();
+end
+// "在贷100万元以上贷款笔数大于等于1"
+rule "rule4"
+    salience 5
+    when creditapproveparam : CreditApproveParam(loan100MiNums >= 1)
+    then
+        creditapproveparam.exec2();
+end
+// "最近24个月逾期的次数大于等于5"
+rule "rule5"
+    salience 2
+    when creditapproveparam : CreditApproveParam(overDueTimes >= 5)
+    then
+        creditapproveparam.exec3();
+end
+// "其他情况"
+rule "rule6"
+    salience 6
+    when creditapproveparam : CreditApproveParam(1 == 1)
+    then
+        creditapproveparam.exec1();
+end

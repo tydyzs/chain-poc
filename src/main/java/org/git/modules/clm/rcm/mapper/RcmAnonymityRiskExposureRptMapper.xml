@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.rcm.mapper.RcmAnonymityRiskExposureRptMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="rcmAnonymityRiskExposureRptResultMap" type="org.git.modules.clm.rcm.entity.RcmAnonymityRiskExposureRpt">
+        <id column="INFO_NUM" property="infoNum"/>
+        <result column="CRD_BALANCE" property="crdBalance"/>
+        <result column="CRD_BALANCE_LAST_MONTH" property="crdBalanceLastMonth"/>
+        <result column="TOTAL_MONTH" property="totalMonth"/>
+        <result column="TOTAL_YEAR" property="totalYear"/>
+        <result column="USE_ORG_NUM" property="useOrgNum"/>
+        <result column="USER_NUM" property="userNum"/>
+        <result column="ORG_NUM" property="orgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UDPATE_TIME" property="udpateTime"/>
+        <result column="REMARK" property="remark"/>
+    </resultMap>
+
+
+    <select id="selectRcmAnonymityRiskExposureRptPage" resultMap="rcmAnonymityRiskExposureRptResultMap">
+        select * from TB_RCM_ANONYMITY_RISKEXPOSURE where is_deleted = 0
+    </select>
+
+</mapper>

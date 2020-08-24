@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.param.mapper.ProductMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="productResultMap" type="org.git.modules.clm.param.entity.Product">
+        <id column="PRODUCT_Num" property="productNum"/>
+        <result column="PRODUCT_NAME" property="productName"/>
+        <result column="SUPER_PRODUCT_Num" property="superProductNum"/>
+        <result column="SUPER_PRODUCT_NAME" property="superProductName"/>
+        <result column="product_type" property="productType"/>
+        <result column="cust_type" property="custType"/>
+        <result column="guarantee_type" property="guaranteeType"/>
+        <result column="PRODUCT_DESCR" property="productDescr"/>
+        <result column="PRODUCT_STATUS_CD" property="productStatusCd"/>
+        <result column="limit_used_type" property="limitUsedType"/>
+        <result column="sys_no" property="sysNo"/>
+        <result column="risk_exposure_type" property="riskExposureType"/>
+        <result column="product_targer" property="productTarger"/>
+        <result column="inout_table" property="inoutTable"/>
+        <result column="vaild_time" property="vaildTime"/>
+        <result column="user_num" property="userNum"/>
+        <result column="org_num" property="orgNum"/>
+        <result column="update_user_num" property="updateUserNum"/>
+        <result column="update_org_num" property="updateOrgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+    <!-- 自定义分页查询 -->
+    <resultMap id="productResultMapVo" type="org.git.modules.clm.param.vo.ProductVO">
+        <id column="PRODUCT_Num" property="productNum"/>
+        <result column="PRODUCT_NAME" property="productName"/>
+        <result column="SUPER_PRODUCT_Num" property="superProductNum"/>
+        <result column="SUPER_PRODUCT_NAME" property="superProductName"/>
+        <result column="product_type" property="productType"/>
+        <result column="cust_type" property="custType"/>
+        <result column="guarantee_type" property="guaranteeType"/>
+        <result column="PRODUCT_DESCR" property="productDescr"/>
+        <result column="PRODUCT_STATUS_CD" property="productStatusCd"/>
+        <result column="limit_used_type" property="limitUsedType"/>
+        <result column="sys_no" property="sysNo"/>
+        <result column="risk_exposure_type" property="riskExposureType"/>
+        <result column="product_targer" property="productTarger"/>
+        <result column="inout_table" property="inoutTable"/>
+        <result column="vaild_time" property="vaildTime"/>
+        <result column="user_num" property="userNum"/>
+        <result column="org_num" property="orgNum"/>
+        <result column="update_user_num" property="updateUserNum"/>
+        <result column="update_org_num" property="updateOrgNum"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="createUserName" property="createUserName"/>
+        <result column="createDeptName" property="createDeptName"/>
+        <result column="createTimeStr" property="createTimeStr"/>
+        <result column="updateTimeStr" property="updateTimeStr"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+
+    <select id="selectProductPage" resultType="org.git.modules.clm.param.vo.ProductVO">
+        select t1.*,
+        to_char(t1.CREATE_TIME,'yyyy-MM-dd') createTimeStr,
+        to_char(t1.UPDATE_TIME,'yyyy-MM-dd') updateTimeStr
+--         (select REAL_NAME from chain_user where id=t1.user_num) createUserName,
+--         (select DEPT_NAME from chain_dept where id=t1.org_num) createDeptName
+        from tb_par_product t1 where is_deleted = 0
+        <if test="product.productNum != null and product.productNum != ''">
+            and t1.PRODUCT_NUM=#{product.productNum}
+        </if>
+        <if test="product.creditSystem != null and product.creditSystem != ''">
+            and t1.CREDIT_SYSTEM =#{product.creditSystem}
+        </if>
+        <if test="product.productName != null and product.productName != ''">
+            and t1.PRODUCT_NAME like CONCAT(CONCAT('%', #{product.productName}) ,'%')
+        </if>
+        <if test="product.productStatusCd != null and product.productStatusCd != ''">
+            and t1.PRODUCT_STATUS_CD =#{product.productStatusCd}
+        </if>
+        <if test="product.limitUsedType != null and product.limitUsedType != ''">
+            and t1.LIMIT_USED_TYPE =#{product.limitUsedType}
+        </if>
+    </select>
+
+    <select id="selectApprove" resultType="int">
+         select count(0) from tb_par_product t1,TB_CRD_APPROVE t2
+        where t1.PRODUCT_NUM=t2.PRODUCT_NUM
+        and t1.product_num=#{productNum}
+    </select>
+
+    <select id="listByProTarger" resultMap="productResultMapVo">
+        select product_num,product_name from tb_par_product where 1=1
+        <choose>
+            <when test="proTarger != null and proTarger=='2'.toString()">
+                and product_targer in ('2','3')
+            </when>
+            <when test="proTarger != null and proTarger=='1'.toString()">
+                and product_targer in ('1','3')
+            </when>
+            <when test="proTarger != null and proTarger!=''">
+                and product_targer = #{proTarger}
+            </when>
+        </choose>
+
+    </select>
+</mapper>

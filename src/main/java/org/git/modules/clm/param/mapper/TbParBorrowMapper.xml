@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.git.modules.clm.param.mapper.TbParBorrowMapper">
+
+
+    <select id="selectTbParBorrowPage" resultType="org.git.modules.clm.param.vo.TbParBorrowVO">
+        select t.*,
+        a.DICT_VALUE LSTG_TYPE_NAME,
+        b.NAME user_name,
+        c.DEPT_NAME org_name,
+        d.CRD_PRODUCT_NAME CRD_DETAIL_PRD_NAME,
+        e.CRD_PRODUCT_NAME LSTG_PRD_NAME
+        from TB_PAR_BORROW t
+        left join CHAIN_DICT a on t.LSTG_TYPE = a.DICT_KEY and a.CODE = 'CD000275'
+        left join CHAIN_USER b on b.ACCOUNT = t.USER_NUM
+        left join CHAIN_dept c on c.id = t.ORG_NUM
+        left join tb_par_crd d on d.CRD_PRODUCT_NUM = t.CRD_DETAIL_PRD
+        left join tb_par_crd e on e.CRD_PRODUCT_NUM = t.LSTG_PRD
+        <if test="tbParBorrow.lstgName!=null">
+            and t.lstg_Name like CONCAT(CONCAT('%',#{tbParBorrow.lstgName}),'%')
+        </if>
+
+        <if test="tbParBorrow.lstgType!=null">
+            and t.lstg_type=#{tbParBorrow.lstgType}
+        </if>
+    </select>
+
+
+
+    <select id="selectCustomerPage" resultType="org.git.modules.clm.param.vo.CustomerVO">
+        select t.CUSTOMER_NUM, t.CUSTOMER_NAME, a.CERT_TYPE, b.DICT_VALUE CERT_TYPE_NAME, a.CERT_NUM
+        from tb_csm_party t
+        left join TB_CSM_CERT_INFO a on t.CUSTOMER_NUM = a.CUSTOMER_NUM
+        left join CHAIN_DICT b on b.DICT_KEY = a.CERT_TYPE and b.CODE = 'CD000003'
+        where 1=1
+        <if test="customerVO.customerName!=null">
+            and t.CUSTOMER_NAME like CONCAT(CONCAT('%',#{customerVO.customerName}),'%')
+        </if>
+        <if test="customerVO.certNum!=null">
+            and a.CERT_NUM like CONCAT(CONCAT('%',#{customerVO.certNum}),'%')
+        </if>
+    </select>
+
+</mapper>
